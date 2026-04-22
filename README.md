@@ -72,4 +72,46 @@ It combines **Machine Learning agents + Gmail API integration + Google OAuth aut
 
 ---
 
-## 🧠 System Architecture
+## 🔄 Workflow
+
+1. User logs in via Google OAuth
+2. Gmail API fetches emails securely
+3. Backend processes emails via AI agents:
+   - Urgency detection
+   - Classification
+   - Summarization
+4. Results sent to React dashboard
+5. User sees prioritized inbox
+
+---
+
+## 🎯 Goal of PRYOPORT
+
+PryoPort is designed to ensure that users never miss important emails or tasks.
+It intelligently analyzes incoming emails, understands their context using AI, and classifies them based on priority and urgency.
+The system helps users focus only on what truly matters by filtering, organizing, and highlighting high-priority communications while reducing noise from less important messages.
+- Understands context semantically (like a human)
+- Filters noise automatically
+- Helps users focus on high-priority actions only
+
+---
+
+## 🚀 Future Improvements
+
+- Slack / Outlook integration
+- Chrome extension for real-time alerts
+- Fine-tuned LLM for domain-specific emails
+- Smart notification system
+- Calendar auto-scheduling from emails
+
+---
+
+## 👨‍💻 Author
+
+Built with ❤️ by **Nandini Singh**
+
+---
+
+## 📌 Note
+
+This project uses AI-driven prioritization and should be considered an assistive productivity tool, not a replacement for human decision-making.
