@@ -1,2 +1,29 @@
 # Ignore sensitive files
 manifest.json
+.env
+credentials.json
+venv
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables (IMPORTANT 🔥)
+.env
+
+# Secrets / credentials
+credentials.json
+client_secret.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
