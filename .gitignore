@@ -16,7 +16,7 @@ __pycache__/
 
 # Environment variables (IMPORTANT 🔥)
 .env
-
+backend/credentials.json
 # Secrets / credentials
 credentials.json
 client_secret.json
