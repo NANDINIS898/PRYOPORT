@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from services.gmail_service import fetch_emails
 
+
 router = APIRouter()
 
 @router.get("/emails")
