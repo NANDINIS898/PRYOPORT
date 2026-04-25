@@ -1,15 +1,16 @@
-# agents/urgency_agent.py
-
 from crewai import Agent
+from llm import get_lmm
 
-def get_urgency_agent(llm):
+def get_urgency_agent(get_llm):
     return Agent(
         role="Urgency Detection Specialist",
-        goal="Determine how urgent an email is",
+        goal=(
+            "Analyze emails and assign urgency level AND urgency score (0-100)"
+        ),
         backstory=(
-            "You analyze emails and decide if they are high, medium, or low priority "
-            "based on deadlines, tone, and required action."
+            "You are an expert at detecting urgency using deadlines, tone, "
+            "time sensitivity, and required actions."
         ),
         verbose=True,
-        llm=llm
+        llm=get_llm
     )

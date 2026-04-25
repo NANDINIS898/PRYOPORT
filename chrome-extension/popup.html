@@ -1,12 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PrYoPort Productivity AI Hub</title>
+  <meta charset="UTF-8" />
+  <title>PrYoPort AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 320px;
+      padding: 15px;
+      background: #0f172a;
+      color: white;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #38bdf8;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #38bdf8;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .high {
+      border-left: 4px solid red;
+    }
+
+    .low {
+      border-left: 4px solid green;
+    }
+  </style>
 </head>
 <body>
-  <h2>Welcome to ProYPort AI Hub</h2>
+
+  <h2>PrYoPort AI</h2>
+
   <button id="login">Login with Gmail</button>
+
+  <div class="card">
+    <h4>Set Manual Priority</h4>
+    <input type="email" id="emailInput" placeholder="Enter email ID" />
+    <select id="prioritySelect">
+      <option value="high">High Priority</option>
+      <option value="low">Low Priority</option>
+    </select>
+    <button id="savePriority">Save</button>
+  </div>
+
+  <div class="card">
+    <h4>🔥 Urgent Notifications</h4>
+    <div id="notifications"></div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

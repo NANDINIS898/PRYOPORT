@@ -1,8 +1,9 @@
 
 from crewai import Agent
+from llm import get_llm
 
 
-def get_classification_agent(llm):
+def get_classification_agent(get_llm):
     return Agent(
         role="Email Classification Expert",
         goal="Classify emails into meaningful categories",
@@ -11,5 +12,5 @@ def get_classification_agent(llm):
             "into internship, deadline, task, spam, or general."
         ),
         verbose=True,
-        llm=llm
+        llm=get_llm
     )
