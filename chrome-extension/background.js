@@ -1,31 +1,62 @@
-const API = "http://127.0.0.1:8000/notifications";
+const API_BASE = "http://127.0.0.1:8000";
+const API = `${API_BASE}/notifications`;
 
-let lastShown = new Set();
+/* ==================================
+   Prevent duplicate notifications
+================================== */
+let shownNotifications = new Set();
 
+/* ==================================
+   Fetch High Priority Notifications
+================================== */
 async function checkNotifications() {
   try {
     const res = await fetch(API);
     const data = await res.json();
 
     data.forEach((mail) => {
-      const id = mail.subject + mail.timestamp;
 
-      if (!lastShown.has(id)) {
-        lastShown.add(id);
+      const uniqueId =
+        mail.gmail_id ||
+        `${mail.subject}_${mail.created_at || Date.now()}`;
 
-        chrome.notifications.create({
-          type: "basic",
-          iconUrl: "icon.png",
-          title: "🔥 Urgent Email",
-          message: mail.summary || mail.subject,
-          priority: 2,
-        });
-      }
+      // already shown
+      if (shownNotifications.has(uniqueId)) return;
+
+      shownNotifications.add(uniqueId);
+
+      chrome.notifications.create(uniqueId, {
+        type: "basic",
+        iconUrl: "icon.png",
+        title: "⚡ PrYoPort Priority Alert",
+        message: mail.summary || mail.subject,
+        priority: 2,
+        requireInteraction: true
+      });
+
     });
+
   } catch (err) {
-    console.log("Error fetching notifications", err);
+    console.log("Notification Error:", err);
   }
 }
 
-// Run every 10 sec
-setInterval(checkNotifications, 10000);
+/* ==================================
+   Cost Optimized Polling
+================================== */
+
+/* check once when extension starts */
+checkNotifications();
+
+/* every 5 min */
+setInterval(checkNotifications, 300000);
+
+
+/* ==================================
+   Optional: Notification Click Action
+================================== */
+chrome.notifications.onClicked.addListener((id) => {
+  chrome.tabs.create({
+    url: "http://localhost:3000"
+  });
+});

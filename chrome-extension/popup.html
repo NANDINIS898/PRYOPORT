@@ -1,80 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PrYoPort AI</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      width: 320px;
-      padding: 15px;
-      background: #0f172a;
-      color: white;
-    }
+<meta charset="UTF-8" />
+<title>PrYoPort AI</title>
 
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
-      color: #38bdf8;
-    }
+<style>
+body {
+    font-family: Arial, sans-serif;
+    width: 340px;
+    padding: 15px;
+    background: #0f172a;
+    color: white;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #38bdf8;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-    }
+h2 {
+    text-align: center;
+    color: #38bdf8;
+    margin-bottom: 12px;
+}
 
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 8px;
-      border-radius: 6px;
-      border: none;
-    }
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #38bdf8;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-    .card {
-      background: #1e293b;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
+button:hover {
+    opacity: 0.9;
+}
 
-    .high {
-      border-left: 4px solid red;
-    }
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: 6px;
+    border: none;
+}
 
-    .low {
-      border-left: 4px solid green;
-    }
-  </style>
+.card {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.status {
+    font-size: 14px;
+    padding: 8px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #1e293b;
+}
+
+.high {
+    border-left: 4px solid red;
+    padding-left: 8px;
+    margin-bottom: 8px;
+}
+
+.low {
+    border-left: 4px solid green;
+    padding-left: 8px;
+    margin-bottom: 8px;
+}
+</style>
 </head>
+
 <body>
 
-  <h2>PrYoPort AI</h2>
+<h2>PrYoPort AI</h2>
 
-  <button id="login">Login with Gmail</button>
+<!-- LOGIN STATUS -->
+<div id="status" class="status">Checking login...</div>
 
-  <div class="card">
-    <h4>Set Manual Priority</h4>
-    <input type="email" id="emailInput" placeholder="Enter email ID" />
+<button id="login">Login with Gmail</button>
+<button id="syncBtn">Sync New Emails</button>
+
+<!-- MANUAL PRIORITY -->
+<div class="card">
+    <h4>⭐ Set Manual Priority</h4>
+
+    <input
+        type="email"
+        id="emailInput"
+        placeholder="Enter sender email"
+    />
+
     <select id="prioritySelect">
-      <option value="high">High Priority</option>
-      <option value="low">Low Priority</option>
+        <option value="high">High Priority</option>
+        <option value="low">Low Priority</option>
     </select>
-    <button id="savePriority">Save</button>
-  </div>
 
-  <div class="card">
+    <button id="savePriority">Save Priority</button>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="card">
     <h4>🔥 Urgent Notifications</h4>
-    <div id="notifications"></div>
-  </div>
+    <div id="notifications">
+        No notifications yet.
+    </div>
+</div>
 
-  <script src="popup.js"></script>
+<script src="popup.js"></script>
+
 </body>
 </html>
