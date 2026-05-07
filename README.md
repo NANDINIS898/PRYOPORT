@@ -1,13 +1,13 @@
 # 🚀 PRYOPORT
 <p align="center">
+It is an AI-powered Chrome extension that intelligently filters, classifies, prioritizes, and summarizes emails using a hybrid ML + LLM orchestration pipeline.
+It combines **Machine Learning agents + Gmail API integration + Google OAuth authentication + full-stack dashboard** to help users focus only on what matters.
 Built to solve inbox overload for students, professionals, and job seekers by surfacing only the emails that truly matter
 </p>
 
 ---
 
 # 📸 Project Preview
-
-## 🖥️ Chrome Extension UI
 <table>
 <tr>
 <td align="center">
@@ -23,17 +23,6 @@ Built to solve inbox overload for students, professionals, and job seekers by su
 </td>
 </tr>
 </table>
----
-
-## 🔔 Smart Notifications
-
----
-
-# 🧠 What is PRYOPORT?
-
-**PRYOPORT** is an AI-powered Chrome extension that intelligently filters, classifies, prioritizes, and summarizes emails using a hybrid ML + LLM orchestration pipeline.
-It combines **Machine Learning agents + Gmail API integration + Google OAuth authentication + full-stack dashboard** to help users focus only on what matters.
-
 ---
 
 # 🧠 Key Features
@@ -114,6 +103,16 @@ to predict urgency scores intelligently.
 - Gmail permission authorization
 
 ---
+# Scalability & Cost Optimization 
+PryoPort was intentionally designed as a cost-optimized MVP to operate efficiently on free-tier infrastructure and APIs. 
+To reduce: - unnecessary API calls 
+- LLM inference costs
+- Gmail polling overhead
+- backend compute usage the current version uses a **manual sync mechanism** instead of continuous background polling.
+-  Users can manually trigger inbox synchronization from the Chrome extension to fetch and analyze new emails. 
+
+---
+
 # ⚡ AI Orchestration Pipeline
 
 ```text
@@ -172,3 +171,5 @@ Stores:
 - badge state
 
 This separation keeps notification fetching lightweight and optimized.
+
+
