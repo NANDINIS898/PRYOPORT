@@ -8,18 +8,24 @@ Built to solve inbox overload for students, professionals, and job seekers by su
 # 📸 Project Preview
 
 ## 🖥️ Chrome Extension UI
+<table>
+<tr>
+<td align="center">
+<img src="screenshots/popupui.png" width="450"/>
+<br/>
+<b>Chrome Extension Popup</b>
+</td>
 
-<p align="center">
-  <img src="screenshots/popupui.png" width="700"/>
-</p>
-
+<td align="center">
+<img src="screenshots/notifications.png" width="320"/>
+<br/>
+<b>Smart Notifications</b>
+</td>
+</tr>
+</table>
 ---
 
 ## 🔔 Smart Notifications
-
-<p align="center">
-  <img src="screenshots/notifications.png" width="400"/>
-</p>
 
 ---
 
