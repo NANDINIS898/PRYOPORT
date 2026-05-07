@@ -1,9 +1,4 @@
 # 🚀 PRYOPORT
-
-<p align="center">
-  <img src="screenshots/popupui.png" width="100%"/>
-</p>
-
 <p align="center">
 Built to solve inbox overload for students, professionals, and job seekers by surfacing only the emails that truly matter
 </p>
