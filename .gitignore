@@ -1,29 +1,22 @@
-# Ignore sensitive files
-manifest.json
-.env
-credentials.json
-venv
-
-# Virtual environment
+# Python
 venv/
-env/
-ENV/
-
-# Python cache
 __pycache__/
 *.pyc
-*.pyo
 
-# Environment variables (IMPORTANT 🔥)
+# Env
 .env
-backend/credentials.json
-# Secrets / credentials
+
+# DB
+*.db
+
+# ML
+*.pkl
+*.csv
+
+# Node
+node_modules/
+
+# VSCode
+.vscode/
 credentials.json
-client_secret.json
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
+token.json

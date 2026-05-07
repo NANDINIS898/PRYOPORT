@@ -1,36 +1,32 @@
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
 import joblib
 
-# sample dataset (replace later with real csv)
-data = {
-    "text": [
-        "Interview tomorrow at 10 AM",
-        "Apply now internship closes tonight",
-        "Reminder assignment deadline today",
-        "Big sale 50 off",
-        "Your friend tagged you",
-        "Weekly newsletter update",
-        "Hackathon registration ends soon",
-        "Meeting rescheduled urgent response needed"
-    ],
-    "label": [1,1,1,0,0,0,1,1]
-}
+df = pd.read_csv("emails_small.csv")
 
-df = pd.DataFrame(data)
+# 🔥 FIX: force everything to string
+df["text"] = df["text"].astype(str)
+df["label"] = df["label"].astype(str).str.lower().str.strip()
 
 X = df["text"]
 y = df["label"]
 
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
 pipeline = Pipeline([
-    ("tfidf", TfidfVectorizer()),
-    ("model", LogisticRegression())
+    ("tfidf", TfidfVectorizer(max_features=5000)),
+    ("model", LogisticRegression(max_iter=1000))
 ])
 
-pipeline.fit(X, y)
+pipeline.fit(X_train, y_train)
 
-joblib.dump(pipeline, "models/urgency.pkl")
+acc = pipeline.score(X_test, y_test)
 
-print("Model trained and saved.")
+joblib.dump(pipeline, "urgency.pkl")
+
+print("✅ Model trained. Accuracy:", acc)

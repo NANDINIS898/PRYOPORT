@@ -1,88 +1,28 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
-import sqlite3
-import time
-
+from services.db_service import connect
+ 
 router = APIRouter()
-
-DB = "pryoport.db"
-
-
-# ---------- CREATE TABLES ----------
-def init_db():
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS sender_rules (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        priority TEXT
-    )
-    """)
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS notifications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        subject TEXT,
-        summary TEXT,
-        timestamp REAL
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-
-init_db()
-
-
-# ---------- REQUEST MODEL ----------
-class PriorityRule(BaseModel):
-    email: str
-    priority: str
-
-
-# ---------- SET PRIORITY ----------
-@router.post("/set-priority")
-def set_priority(data: PriorityRule):
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-
-    cur.execute("""
-    INSERT OR REPLACE INTO sender_rules(email, priority)
-    VALUES (?, ?)
-    """, (data.email, data.priority))
-
-    conn.commit()
-    conn.close()
-
-    return {"message": "saved"}
-
-
-# ---------- GET NOTIFICATIONS ----------
+ 
+ 
 @router.get("/notifications")
 def get_notifications():
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-
+    conn = connect()
+    cur  = conn.cursor()
+ 
+    # Return all fields popup.js and background.js need:
+    # priority    → for grouping into HIGH / MEDIUM sections
+    # urgency_score → for the score chip and score bar
+    # summary     → for the notification message text
+    # timestamp   → for deduplication in background.js
     cur.execute("""
-    SELECT subject, summary, timestamp
-    FROM notifications
-    ORDER BY id DESC
-    LIMIT 10
+        SELECT subject, summary, priority, urgency_score, created_at as timestamp
+        FROM emails
+        WHERE priority IN ('high', 'medium')
+        ORDER BY urgency_score DESC, created_at DESC
+        LIMIT 30
     """)
-
+ 
     rows = cur.fetchall()
     conn.close()
-
-    result = []
-
-    for r in rows:
-        result.append({
-            "subject": r[0],
-            "summary": r[1],
-            "timestamp": r[2]
-        })
-
-    return result
+ 
+    return {"notifications": [dict(row) for row in rows]}

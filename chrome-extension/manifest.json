@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "ProPort Productivity AI Hub",
+  "version": "1.0",
+  "description": "AI-powered productivity assistant.",
+  "permissions": ["identity", "storage", "tabs", "scripting","notifications", "alarms"],
+  "host_permissions": ["http://127.0.0.1:8000/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "oauth2": {
+  "client_id": "248978668264-u1mot7q2najrsjvlaoek76dc31btij3j.apps.googleusercontent.com.apps.googleusercontent.com",
+  "scopes": ["https://www.googleapis.com/auth/gmail.readonly"]
+}
+}

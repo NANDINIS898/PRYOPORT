@@ -2,50 +2,97 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 
+
 def fetch_emails(session_creds):
 
-    creds = Credentials(**session_creds)
+    try:
+        creds = Credentials(**session_creds)
 
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
+        # 🔁 Refresh token if expired
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
 
-    service = build("gmail", "v1", credentials=creds)
+        service = build("gmail", "v1", credentials=creds)
 
-    results = service.users().messages().list(
-        userId="me",
-        maxResults=5
-    ).execute()
-
-    messages = results.get("messages", [])
-
-    emails = []
-
-    for msg in messages:
-
-        msg_data = service.users().messages().get(
+        # =====================================================
+        # 🔥 FETCH LATEST EMAILS (IMPORTANT FIX)
+        # =====================================================
+        results = service.users().messages().list(
             userId="me",
-            id=msg["id"]
+            maxResults=10,
+            q="newer_than:1d"   # 👈 only recent emails
         ).execute()
 
-        headers = msg_data["payload"]["headers"]
+        messages = results.get("messages", [])
 
-        subject = next(
-            (h["value"] for h in headers if h["name"] == "Subject"),
-            ""
-        )
+        if not messages:
+            print("⚠️ No emails found from Gmail API")
+            return {"emails": []}
 
-        sender = next(
-            (h["value"] for h in headers if h["name"] == "From"),
-            ""
-        )
+        # 🔄 Reverse to prioritize newest emails first
+        messages = list(reversed(messages))
 
-        snippet = msg_data.get("snippet", "")
+        emails = []
 
-        emails.append({
-            "id": msg["id"],
-            "subject": subject,
-            "from": sender,
-            "snippet": snippet
-        })
+        # =====================================================
+        # 📩 PROCESS EACH EMAIL
+        # =====================================================
+        for msg in messages:
 
-    return {"emails": emails}
+            try:
+                msg_data = service.users().messages().get(
+                    userId="me",
+                    id=msg["id"]
+                ).execute()
+
+                payload = msg_data.get("payload", {})
+                headers = payload.get("headers", [])
+
+                # -----------------------------
+                # Extract Subject
+                # -----------------------------
+                subject = next(
+                    (h["value"] for h in headers if h["name"] == "Subject"),
+                    "No Subject"
+                )
+
+                # -----------------------------
+                # Extract Sender
+                # -----------------------------
+                sender = next(
+                    (h["value"] for h in headers if h["name"] == "From"),
+                    "Unknown Sender"
+                )
+
+                # -----------------------------
+                # Extract Snippet
+                # -----------------------------
+                snippet = msg_data.get("snippet", "")
+
+                # =====================================================
+                # 🧠 DEBUG LOGS (VERY IMPORTANT FOR YOU)
+                # =====================================================
+                print("\n📩 EMAIL FETCHED -------------------")
+                print("FROM   :", sender)
+                print("SUBJECT:", subject)
+                print("SNIPPET:", snippet[:100])
+                print("-----------------------------------")
+
+                emails.append({
+                    "id": msg["id"],
+                    "subject": subject,
+                    "from": sender,
+                    "snippet": snippet
+                })
+
+            except Exception as e:
+                print("❌ Error processing email:", str(e))
+                continue
+
+        print(f"\n✅ Total emails fetched: {len(emails)}\n")
+
+        return {"emails": emails}
+
+    except Exception as e:
+        print("❌ Gmail Fetch Error:", str(e))
+        return {"emails": []}

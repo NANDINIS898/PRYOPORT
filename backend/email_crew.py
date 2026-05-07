@@ -1,199 +1,190 @@
-# agents/email_crew.py
-
-from crewai import Crew, Task
-from langchain_groq import ChatGroq
 import os
-import json
-from dotenv import load_dotenv
+import re
 
-from agents.classification_agent import get_classification_agent
-from agents.summary_agent import get_summary_agent
-from agents.urgency_agent import detect_urgency   # <-- ML wrapper function
+from langchain_groq import ChatGroq
 
-load_dotenv()
-
-THRESHOLD = 70
-
-# temporary memory store
-manual_priority_store = {}
+from agents.classification_agent import classify_email
+from models.urgency_model import predict_urgency
+from services.db_service import get_manual_priority
 
 
-# =====================================================
-# LLM GATEKEEPER
-# =====================================================
-def semantic_filter(email_text, llm):
+# ==========================================
+# SUMMARY AGENT
+# ==========================================
+def generate_summary(email_text, category, score, llm):
+
     prompt = f"""
-    Decide whether this email is IMPORTANT.
+Create a short push notification for this email.
 
-    Important examples:
-    - internship
-    - interview
-    - deadline
-    - placement
-    - task
-    - urgent request
-    - shortlisted
-    - offer letter
+Email:
+{email_text}
 
-    Return ONLY valid JSON:
+Category: {category}
+Urgency Score: {score}
 
-    {{
-      "important": true,
-      "confidence": 82
-    }}
-
-    Email:
-    {email_text}
-    """
+Rules:
+- Keep it short
+- Sound like a mobile notification
+- Return ONLY one sentence
+"""
 
     try:
         response = llm.invoke(prompt).content.strip()
-        return json.loads(response)
-    except:
-        return {
-            "important": False,
-            "confidence": 0
-        }
+
+        # cleanup markdown if model returns it
+        response = response.replace("```", "")
+        response = response.replace("json", "")
+
+        return response
+
+    except Exception as e:
+        print("Summary Error:", e)
+        return "New important email received."
 
 
-# =====================================================
-# MAIN PIPELINE
-# =====================================================
+# ==========================================
+# MAIN ORCHESTRATOR PIPELINE
+# ==========================================
 def analyze_email_with_agents(subject, snippet, sender=None):
 
+    # ======================================
+    # LOAD LLM
+    # ======================================
     llm = ChatGroq(
         groq_api_key=os.getenv("GROQ_API_KEY"),
-        model="llama3-70b-8192",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         temperature=0.2
     )
 
+    # ======================================
+    # EMAIL TEXT
+    # ======================================
     email_text = f"""
-    Subject: {subject}
+Subject:
+{subject}
 
-    Body:
-    {snippet}
-    """
+Body:
+{snippet}
+"""
 
-    # ==========================================
-    # STEP 1: GATEKEEPER
-    # ==========================================
-    gate = semantic_filter(email_text, llm)
+    # ======================================
+    # CLEAN SENDER EMAIL
+    # ======================================
+    clean_sender = ""
 
-    if not gate["important"] or gate["confidence"] < 50:
-        return {
-            "category": "ignored",
-            "priority": "low",
-            "score": 0,
-            "summary": None
-        }
+    if sender:
 
-    # ==========================================
-    # STEP 2: MANUAL PRIORITY OVERRIDE
-    # ==========================================
-    force_high = False
+        match = re.search(r"<(.+?)>", sender)
 
-    if sender and sender in manual_priority_store:
-        if manual_priority_store[sender] == "high":
-            force_high = True
+        if match:
+            clean_sender = match.group(1).lower()
+        else:
+            clean_sender = sender.lower()
 
-    # ==========================================
-    # STEP 3: CLASSIFICATION AGENT (CrewAI)
-    # ==========================================
-    classifier = get_classification_agent(llm)
+    # ======================================
+    # STEP 1 → CLASSIFICATION AGENT
+    # ======================================
+    try:
 
-    classify_task = Task(
-        description=f"""
-        Classify this email into ONLY one category:
+        classification = classify_email(
+            subject,
+            snippet
+        )
 
-        job
-        internship
-        interview
-        hackathon
-        exam
-        task
-        promotion
-        spam
-        general
+        category = classification.get(
+            "category",
+            "general"
+        ).lower()
 
-        Email:
-        {email_text}
+    except Exception as e:
 
-        Return ONLY one word.
-        """,
-        agent=classifier,
-        expected_output="single category word"
-    )
+        print("Classification Error:", e)
 
-    crew = Crew(
-        agents=[classifier],
-        tasks=[classify_task],
-        verbose=False
-    )
+        category = "general"
 
-    classify_result = crew.kickoff()
-    category = str(classify_result).strip().lower()
+    # ======================================
+    # STEP 2 → URGENCY MODEL
+    # ======================================
+    try:
 
-    # ==========================================
-    # STEP 4: URGENCY MODEL (NO CrewAI)
-    # ==========================================
-    urgency_result = detect_urgency(
-        category=category,
-        subject=subject,
-        snippet=snippet
-    )
+        urgency = predict_urgency(
+            subject=subject,
+            snippet=snippet,
+            category=category,
+            sender=clean_sender
+        )
 
-    score = urgency_result["score"]
-    priority = urgency_result["priority"]
+        score = urgency.get("score", 0)
 
-    # ==========================================
-    # STEP 5: PRIORITY ENGINE
-    # ==========================================
-    if force_high:
+    except Exception as e:
+
+        print("Urgency Error:", e)
+
+        score = 0
+
+    # ======================================
+    # STEP 3 → MANUAL PRIORITY OVERRIDE
+    # ======================================
+    try:
+
+        if clean_sender:
+
+            manual = get_manual_priority(
+                clean_sender
+            )
+
+            if manual == "high":
+                score = max(score, 95)
+
+    except Exception as e:
+
+        print("Manual Priority Error:", e)
+
+    # ======================================
+    # STEP 4 → CLAMP SCORE
+    # ======================================
+    score = max(0, min(100, int(score)))
+
+    # ======================================
+    # STEP 5 → PRIORITY LABEL
+    # ======================================
+    if score >= 75:
         priority = "high"
-        score = max(score, 95)
 
-    # ==========================================
-    # STEP 6: SUMMARY AGENT ONLY IF HIGH
-    # ==========================================
+    elif score >= 50:
+        priority = "medium"
+
+    else:
+        priority = "low"
+
+    # ======================================
+    # STEP 6 → SUMMARY AGENT
+    # ======================================
     summary = None
 
-    if priority == "high":
+    if priority in ["high", "medium"]:
 
-        summarizer = get_summary_agent(llm)
-
-        summary_task = Task(
-            description=f"""
-            Convert this email into one short personalized notification.
-
-            Examples:
-            - You have an interview tomorrow at 10 AM.
-            - Internship application closes tonight.
-            - Assignment deadline is today.
-
-            Email:
-            {email_text}
-
-            Category: {category}
-            Score: {score}
-
-            Return ONLY one sentence.
-            """,
-            agent=summarizer,
-            expected_output="one line summary"
+        summary = generate_summary(
+            email_text=email_text,
+            category=category,
+            score=score,
+            llm=llm
         )
 
-        summary_crew = Crew(
-            agents=[summarizer],
-            tasks=[summary_task],
-            verbose=False
-        )
+    # ======================================
+    # DEBUG LOGS
+    # ======================================
+    print("\n🧠 FINAL EMAIL ANALYSIS")
+    print("SUBJECT :", subject)
+    print("CATEGORY:", category)
+    print("SENDER  :", clean_sender)
+    print("SCORE   :", score)
+    print("PRIORITY:", priority)
+    print("SUMMARY :", summary)
 
-        summary_result = summary_crew.kickoff()
-        summary = str(summary_result).strip()
-
-    # ==========================================
+    # ======================================
     # FINAL RESPONSE
-    # ==========================================
+    # ======================================
     return {
         "category": category,
         "priority": priority,

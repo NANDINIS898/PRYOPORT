@@ -11,7 +11,7 @@ async def google_login(request: Request):
     auth_url, _ = flow.authorization_url(
     access_type='offline',
     include_granted_scopes='true',
-    prompt='select_account'
+    prompt='consent'
 )
     # ✅ store verifier in session (safe across redirect)
     request.session["code_verifier"] = flow.code_verifier
@@ -20,10 +20,6 @@ async def google_login(request: Request):
 @router.get("/oauth2callback")
 async def oauth_callback(request: Request):
     print("🔥 CALLBACK HIT")
-
-    # ✅ Prevent duplicate execution
-    if request.session.get("creds"):
-        return {"message": "Already logged in"}
 
     flow = get_flow()
 
@@ -35,6 +31,12 @@ async def oauth_callback(request: Request):
 
     creds = flow.credentials
 
+    # ❗ FORCE ensure refresh_token exists
+    if not creds.refresh_token:
+        return {
+            "error": "No refresh_token received. Please logout and login again."
+        }
+
     request.session["creds"] = {
         "token": creds.token,
         "refresh_token": creds.refresh_token,
@@ -44,7 +46,10 @@ async def oauth_callback(request: Request):
         "scopes": creds.scopes
     }
 
+    print("✅ CREDS SAVED:", request.session["creds"])
+
     return {"message": "Logged in with Google"}
+
 
 @router.get("/logout")
 async def logout(request: Request):

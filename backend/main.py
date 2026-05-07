@@ -15,11 +15,17 @@ from services.sync_services import sync_emails
 from routes import auth_routes, gmail_routes
 from routes.rules_routes import router as rules_router
 from routes.extension_routes import router as extension_router
+from routes import interaction_routes
 
-from models import init_db
+
+
+from dbmodel import init_db
+
 
 app = FastAPI()
-
+@app.on_event("startup")
+def startup():
+    init_db()
 
 # ==========================================================
 # CORS
@@ -45,15 +51,6 @@ app.add_middleware(
 
 
 # ==========================================================
-# STARTUP
-# ==========================================================
-
-@app.on_event("startup")
-def startup():
-    init_db()
-
-
-# ==========================================================
 # ROUTERS
 # ==========================================================
 
@@ -61,7 +58,7 @@ app.include_router(auth_routes.router)
 app.include_router(gmail_routes.router)
 app.include_router(rules_router)
 app.include_router(extension_router)
-
+app.include_router(interaction_routes.router)
 
 # ==========================================================
 # REAL LOGIN STATUS
@@ -112,3 +109,4 @@ def sync_now(request: Request):
             "success": False,
             "message": str(e)
         }
+    

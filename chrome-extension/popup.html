@@ -1,115 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>PrYoPort AI</title>
-
-<style>
-body {
-    font-family: Arial, sans-serif;
-    width: 340px;
-    padding: 15px;
-    background: #0f172a;
-    color: white;
-}
-
-h2 {
-    text-align: center;
-    color: #38bdf8;
-    margin-bottom: 12px;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 8px;
-    background: #38bdf8;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    opacity: 0.9;
-}
-
-input, select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 8px;
-    border-radius: 6px;
-    border: none;
-}
-
-.card {
-    background: #1e293b;
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
-.status {
-    font-size: 14px;
-    padding: 8px;
-    text-align: center;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    background: #1e293b;
-}
-
-.high {
-    border-left: 4px solid red;
-    padding-left: 8px;
-    margin-bottom: 8px;
-}
-
-.low {
-    border-left: 4px solid green;
-    padding-left: 8px;
-    margin-bottom: 8px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>PrYoPort</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
-
 <body>
 
-<h2>PrYoPort AI</h2>
+<div class="container">
 
-<!-- LOGIN STATUS -->
-<div id="status" class="status">Checking login...</div>
-
-<button id="login">Login with Gmail</button>
-<button id="syncBtn">Sync New Emails</button>
-
-<!-- MANUAL PRIORITY -->
-<div class="card">
-    <h4>⭐ Set Manual Priority</h4>
-
-    <input
-        type="email"
-        id="emailInput"
-        placeholder="Enter sender email"
-    />
-
-    <select id="prioritySelect">
-        <option value="high">High Priority</option>
-        <option value="low">Low Priority</option>
-    </select>
-
-    <button id="savePriority">Save Priority</button>
-</div>
-
-<!-- NOTIFICATIONS -->
-<div class="card">
-    <h4>🔥 Urgent Notifications</h4>
-    <div id="notifications">
-        No notifications yet.
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <span class="logo">⚡</span>
+      <div>
+        <h1>PrYoPort</h1>
+        <span class="tagline">Smart Inbox Engine</span>
+      </div>
     </div>
+    <div class="header-right">
+      <div id="urgentBadge" class="urgent-badge hidden">
+        <span id="urgentCount">0</span> urgent
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS + ACTIONS -->
+  <div class="card status-card">
+    <div class="status-row">
+      <p id="status" class="status-text">⏳ Checking...</p>
+      <button id="login" class="btn primary small">Login</button>
+    </div>
+    <button id="syncBtn" class="btn accent full-width">
+      <span id="syncLabel">🔄 Sync Inbox</span>
+    </button>
+  </div>
+
+  <!-- PRIORITY SENDER RULE -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🎯</span>
+      <h3>Priority Sender</h3>
+    </div>
+    <input type="text" id="emailInput" placeholder="sender@company.com" class="input">
+    <div class="row-gap">
+      <select id="prioritySelect" class="select">
+        <option value="high">🔥 High Priority</option>
+        <option value="low">🧊 Low Priority</option>
+      </select>
+      <button id="savePriority" class="btn primary small">Save</button>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS PANEL -->
+  <div class="card notif-card">
+    <div class="card-header">
+      <span class="card-icon">🔔</span>
+      <h3>Notifications</h3>
+      <button id="clearBtn" class="btn ghost tiny">Clear all</button>
+    </div>
+
+    <div id="section-high" class="priority-section hidden">
+      <div class="section-label high"><span class="dot"></span>HIGH PRIORITY</div>
+      <div id="list-high" class="notif-list"></div>
+    </div>
+
+    <div id="section-medium" class="priority-section hidden">
+      <div class="section-label medium"><span class="dot"></span>MEDIUM</div>
+      <div id="list-medium" class="notif-list"></div>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+      <span class="empty-icon">📭</span>
+      <p>No priority emails yet</p>
+      <small>Sync your inbox to get started</small>
+    </div>
+  </div>
+
+  <div class="footer">AI-powered email decisions · PrYoPort</div>
+
 </div>
-
 <script src="popup.js"></script>
-
 </body>
 </html>

@@ -1,23 +1,17 @@
 from fastapi import APIRouter
-from services.db_service import connect
+from services.db_service import save_rule
 
 router = APIRouter()
 
 @router.post("/set-priority")
 def set_priority(data: dict):
 
-    sender = data["sender"]
-    priority = data["priority"]
+    sender = data.get("email")   # ✅ FIXED
+    priority = data.get("priority")
 
-    conn = connect()
-    cur = conn.cursor()
+    if not sender or not priority:
+        return {"error": "Missing data"}
 
-    cur.execute("""
-    INSERT OR REPLACE INTO rules(sender, manual_priority)
-    VALUES (?,?)
-    """, (sender, priority))
+    save_rule(sender, priority)
 
-    conn.commit()
-    conn.close()
-
-    return {"message": "Saved"}
+    return {"message": "Saved successfully"}
