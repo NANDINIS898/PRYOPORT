@@ -62,6 +62,17 @@ def init_db():
     )
     """)
 
+    # ── safe migration: add new columns if they don't exist yet ──
+    for col_sql in [
+        "ALTER TABLE emails ADD COLUMN is_read INTEGER DEFAULT 0",
+        "ALTER TABLE emails ADD COLUMN read_at TIMESTAMP",
+    ]:
+        try:
+            cur.execute(col_sql)
+        except sqlite3.OperationalError:
+            pass   # column already exists — fine
+ 
+
     conn.commit()
     conn.close()
 

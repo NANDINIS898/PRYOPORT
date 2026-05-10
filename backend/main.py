@@ -16,7 +16,7 @@ from routes import auth_routes, gmail_routes
 from routes.rules_routes import router as rules_router
 from routes.extension_routes import router as extension_router
 from routes import interaction_routes
-
+from routes.dashboard_routes import router as dashboard_router
 
 
 from dbmodel import init_db
@@ -33,7 +33,11 @@ def startup():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",       # React dashboard
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,11 +48,13 @@ app.add_middleware(
 # SESSION
 # ==========================================================
 
+
 app.add_middleware(
     SessionMiddleware,
-    secret_key="supersecretkey"
+    secret_key="supersecretkey",
+    same_site="none",
+    https_only=False
 )
-
 
 # ==========================================================
 # ROUTERS
@@ -59,6 +65,7 @@ app.include_router(gmail_routes.router)
 app.include_router(rules_router)
 app.include_router(extension_router)
 app.include_router(interaction_routes.router)
+app.include_router(dashboard_router)
 
 # ==========================================================
 # REAL LOGIN STATUS

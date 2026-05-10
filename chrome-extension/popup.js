@@ -154,8 +154,6 @@ async function loadNotifications() {
     emptyState.classList.remove("hidden");
   }
 }
-
-// ── BUILD A NOTIFICATION CARD ──────────────────────────
 function makeCard(item, priority) {
   const div = document.createElement("div");
   div.className = `notif-item ${priority}`;
@@ -166,14 +164,30 @@ function makeCard(item, priority) {
 
   div.innerHTML = `
     <div class="notif-top">
-      <span class="notif-subject" title="${subject}">${subject}</span>
-      <span class="score-chip ${priority}">${score}</span>
+      <span class="notif-subject" title="${subject}">
+        ${subject}
+      </span>
+
+      <span class="score-chip ${priority}">
+        ${score}
+      </span>
     </div>
+
     ${summary ? `<div class="notif-summary">${summary}</div>` : ""}
+
     <div class="score-bar-wrap">
       <div class="score-bar ${priority}" style="width:${score}%"></div>
     </div>
   `;
+
+  // Make card clickable
+  div.style.cursor = "pointer";
+
+  div.addEventListener("click", () => {
+    chrome.tabs.create({
+      url: `http://localhost:5173/?id=${encodeURIComponent(item.gmail_id)}`
+    });
+  });
 
   return div;
 }
