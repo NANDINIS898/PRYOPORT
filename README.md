@@ -65,6 +65,41 @@ Built to solve inbox overload for students, professionals, and job seekers by su
 
 ---
 
+## 🖥️ Smart Dashboard
+
+PryoPort includes a real-time React + Vite dashboard connected with the Chrome Extension and backend pipeline.
+
+### Features
+✅ Real-time inbox synchronization  
+✅ High / Medium / Read email sections  
+✅ Open emails directly in Gmail  
+✅ Mark emails as read  
+✅ Notification click opens focused dashboard email  
+✅ AI-generated summaries  
+✅ Manual sender priority rules  
+✅ CRUD operations for rules  
+✅ Change email priority anytime  
+✅ Live extension badge + notification sync  
+✅ User interaction learning system  
+
+---
+
+## 🔔 Notification → Dashboard Flow
+
+1. High-priority email detected  
+2. Chrome extension shows notification  
+3. Clicking notification opens dashboard  
+4. Selected email gets highlighted  
+5. User can:
+   - Open in Gmail
+   - Mark as read
+   - Change priority
+   - Manage rules
+
+User actions help PryoPort improve future prioritization using behavioral learning.
+
+---
+
 # 🤖 Multi-Agent System
 ### 🧩 Classification Agent
 Categorizes emails semantically into:
