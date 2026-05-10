@@ -22,6 +22,14 @@ Built to solve inbox overload for students, professionals, and job seekers by su
 <b>Smart Notifications</b>
 </td>
 </tr>
+
+<tr>
+<td colspan="2" align="center">
+<img src="screenshots/dashboard.png" width="900"/>
+<br/>
+<b>Real-Time React Dashboard</b>
+</td>
+</tr>
 </table>
 ---
 
