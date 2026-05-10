@@ -25,7 +25,7 @@ Built to solve inbox overload for students, professionals, and job seekers by su
 
 <tr>
 <td colspan="2" align="center">
-<img src="screenshots/dashboard.png" width="900"/>
+<img src="screenshots/dashboard.png" width="800"/>
 <br/>
 <b>Real-Time React Dashboard</b>
 </td>
