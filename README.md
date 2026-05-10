@@ -39,7 +39,7 @@ Built to solve inbox overload for students, professionals, and job seekers by su
 ✅ ML-based urgency prediction  
 ✅ Smart notification summaries  
 ✅ Gmail integration + Google OAuth Login  
-✅ Chrome extension popup dashboard  
+✅ Chrome extension popup
 ✅ Badge count for important emails  
 ✅ Sender reputation learning  
 ✅ User interaction learning  
@@ -117,6 +117,40 @@ Categorizes emails semantically into:
 Generates concise AI-powered summaries for notifications and dashboard display.
 
 ---
+
+## 🗄️ Database Architecture
+
+### Emails Table
+Stores:
+- subject
+- sender
+- snippet
+- category
+- urgency score
+- priority
+- AI summary
+
+---
+
+### Rules Table
+Stores:
+- manual sender priority rules
+- user-defined overrides
+
+Example:
+- always prioritize emails from specific senders
+
+---
+
+### Notifications Table
+Stores:
+- high-priority notifications only
+- notification summaries
+- urgency score
+- badge state
+
+This separation keeps notification fetching lightweight and optimized.
+
 ### 📊 ML Urgency Prediction Model
 Uses:
 - TF-IDF Vectorization
@@ -181,38 +215,5 @@ email_crew.py (Main Orchestrator)
             ↓
 Chrome Extension Notifications
 
-
-## 🗄️ Database Architecture
-
-### Emails Table
-Stores:
-- subject
-- sender
-- snippet
-- category
-- urgency score
-- priority
-- AI summary
-
----
-
-### Rules Table
-Stores:
-- manual sender priority rules
-- user-defined overrides
-
-Example:
-- always prioritize emails from specific senders
-
----
-
-### Notifications Table
-Stores:
-- high-priority notifications only
-- notification summaries
-- urgency score
-- badge state
-
-This separation keeps notification fetching lightweight and optimized.
 
 
