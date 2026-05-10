@@ -214,6 +214,9 @@ email_crew.py (Main Orchestrator)
     Notifications Table
             ↓
 Chrome Extension Notifications
+             ↓
+Real time Updates + crud operations in React Dashboard 
+            
 
 
 
