@@ -109,10 +109,13 @@ export default function App() {
         </div>
 
         {auth && (
-          <div style={{ ...mono, fontSize: 11, color: auth.logged_in ? "#22c55e" : "#f43f5e" }}>
-            {auth.logged_in ? `🟢 ${auth.email || "Connected"}` : "🔴 Not Connected"}
-          </div>
-        )}
+  <div style={{ ...mono, fontSize: 11, 
+    color: auth.logged_in ? "#22c55e" : "#f43f5e" }}>
+    {auth.logged_in
+      ? `🟢 ${auth.email || "Connected"}`   // shows "Extension Connected" or real email
+      : "🔴 Not Connected — Open extension to sync"}
+  </div>
+)}
       </nav>
 
       {/* ── MAIN ── */}

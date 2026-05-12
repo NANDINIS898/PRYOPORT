@@ -169,3 +169,25 @@ def get_new_notifications(limit=20):
     conn.close()
 
     return [dict(row) for row in rows]
+# =========================================
+# CHECK EXTENSION AUTH STATUS
+# =========================================
+def get_extension_auth():
+    """
+    No user table exists, so we infer extension connectivity
+    by checking if any emails have been synced into the DB.
+    Returns dict with logged_in bool and email (if derivable).
+    """
+    conn = connect()
+    cur = conn.cursor()
+
+    # Check if any emails exist (only present if extension synced)
+    cur.execute("SELECT COUNT(*) as total FROM emails")
+    row = cur.fetchone()
+    has_emails = row["total"] > 0
+
+    conn.close()
+    return {
+        "logged_in": has_emails,
+        "source": "extension" if has_emails else None
+    }
