@@ -53,11 +53,10 @@ app.add_middleware(
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key="supersecretkey",
-    same_site="none",
-    https_only=True
+    secret_key=os.getenv("SESSION_SECRET", "supersecretkey"),
+    same_site="none",       
+    https_only=True        
 )
-
 # ==========================================================
 # ROUTERS
 # ==========================================================

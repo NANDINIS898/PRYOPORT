@@ -1,17 +1,17 @@
-
-const API = "https://pryoport-backend.onrender.com";
+const API       = "https://pryoport-backend.onrender.com";
+const DASHBOARD = "https://pryoport-frontend.vercel.app"; // ← your actual Vercel URL
 
 // ── ELEMENTS ───────────────────────────────────────────
-const statusBox     = document.getElementById("status");
-const loginBtn      = document.getElementById("login");
-const syncBtn       = document.getElementById("syncBtn");
-const syncLabel     = document.getElementById("syncLabel");
+const statusBox       = document.getElementById("status");
+const loginBtn        = document.getElementById("login");
+const syncBtn         = document.getElementById("syncBtn");
+const syncLabel       = document.getElementById("syncLabel");
 const savePriorityBtn = document.getElementById("savePriority");
-const emailInput    = document.getElementById("emailInput");
-const prioritySelect = document.getElementById("prioritySelect");
-const urgentBadge   = document.getElementById("urgentBadge");
-const urgentCount   = document.getElementById("urgentCount");
-const clearBtn      = document.getElementById("clearBtn");
+const emailInput      = document.getElementById("emailInput");
+const prioritySelect  = document.getElementById("prioritySelect");
+const urgentBadge     = document.getElementById("urgentBadge");
+const urgentCount     = document.getElementById("urgentCount");
+const clearBtn        = document.getElementById("clearBtn");
 
 const listHigh      = document.getElementById("list-high");
 const listMedium    = document.getElementById("list-medium");
@@ -32,9 +32,9 @@ async function checkLoginStatus() {
     const data = await res.json();
 
     if (data.logged_in) {
-      statusBox.innerText  = "🟢 Gmail Connected";
-      loginBtn.innerText   = "Connected";
-      loginBtn.disabled    = true;
+      statusBox.innerText = "🟢 Gmail Connected";
+      loginBtn.innerText  = "Connected";
+      loginBtn.disabled   = true;
     } else {
       statusBox.innerText = "🔴 Not Connected";
       loginBtn.disabled   = false;
@@ -44,15 +44,47 @@ async function checkLoginStatus() {
   }
 }
 
-// ── LOGIN ──────────────────────────────────────────────
+// ── LOGIN — opens OAuth tab then polls until logged in ─
 loginBtn.addEventListener("click", () => {
+  // Open Google OAuth in a new tab
   chrome.tabs.create({ url: `${API}/auth/google` });
+
+  statusBox.innerText = "⏳ Waiting for Google login...";
+  loginBtn.disabled   = true;
+
+  // Poll /auth-status every 2s until logged in
+  const poll = setInterval(async () => {
+    try {
+      const res  = await fetch(`${API}/auth-status`, { credentials: "include" });
+      const data = await res.json();
+
+      if (data.logged_in) {
+        clearInterval(poll);
+        statusBox.innerText = `🟢 Gmail Connected`;
+        loginBtn.innerText  = "Connected";
+        loginBtn.disabled   = true;
+        await loadNotifications();
+      }
+    } catch {
+      // backend still waking up — keep polling silently
+    }
+  }, 2000);
+
+  // Stop polling after 3 minutes regardless
+  setTimeout(() => {
+    clearInterval(poll);
+    if (loginBtn.disabled && statusBox.innerText.includes("Waiting")) {
+      statusBox.innerText = "⚠️ Login timed out. Try again.";
+      loginBtn.disabled   = false;
+      loginBtn.innerText  = "Login with Google";
+    }
+  }, 180000);
 });
 
 // ── SYNC ───────────────────────────────────────────────
 syncBtn.addEventListener("click", async () => {
   try {
-    syncBtn.disabled  = true;
+    syncBtn.disabled    = true;
     syncLabel.innerText = "⏳ Syncing...";
     statusBox.innerText = "⏳ Fetching emails...";
 
@@ -120,26 +152,21 @@ async function loadNotifications() {
     const data = await res.json();
     const list = data.notifications || [];
 
-    // separate by priority
     const high   = list.filter(n => n.priority === "high");
     const medium = list.filter(n => n.priority === "medium");
 
-    // clear old items
     listHigh.innerHTML   = "";
     listMedium.innerHTML = "";
 
     const hasAny = high.length > 0 || medium.length > 0;
 
-    // toggle empty state
-    emptyState.classList.toggle("hidden", hasAny);
+    emptyState.classList.toggle("hidden",    hasAny);
     sectionHigh.classList.toggle("hidden",   high.length === 0);
     sectionMedium.classList.toggle("hidden", medium.length === 0);
 
-    // render cards
     high.forEach(n   => listHigh.appendChild(makeCard(n, "high")));
     medium.forEach(n => listMedium.appendChild(makeCard(n, "medium")));
 
-    // header urgent badge
     if (high.length > 0) {
       urgentBadge.classList.remove("hidden");
       urgentCount.innerText = high.length;
@@ -147,7 +174,6 @@ async function loadNotifications() {
       urgentBadge.classList.add("hidden");
     }
 
-    // update extension badge
     chrome.action.setBadgeText({ text: high.length > 0 ? String(high.length) : "" });
     chrome.action.setBadgeBackgroundColor({ color: "#ef4444" });
 
@@ -155,6 +181,8 @@ async function loadNotifications() {
     emptyState.classList.remove("hidden");
   }
 }
+
+// ── MAKE CARD ──────────────────────────────────────────
 function makeCard(item, priority) {
   const div = document.createElement("div");
   div.className = `notif-item ${priority}`;
@@ -165,28 +193,21 @@ function makeCard(item, priority) {
 
   div.innerHTML = `
     <div class="notif-top">
-      <span class="notif-subject" title="${subject}">
-        ${subject}
-      </span>
-
-      <span class="score-chip ${priority}">
-        ${score}
-      </span>
+      <span class="notif-subject" title="${subject}">${subject}</span>
+      <span class="score-chip ${priority}">${score}</span>
     </div>
-
     ${summary ? `<div class="notif-summary">${summary}</div>` : ""}
-
     <div class="score-bar-wrap">
       <div class="score-bar ${priority}" style="width:${score}%"></div>
     </div>
   `;
 
-  // Make card clickable
   div.style.cursor = "pointer";
 
+  // ✅ FIXED: opens production dashboard, not localhost
   div.addEventListener("click", () => {
     chrome.tabs.create({
-      url: `http://localhost:5173/?id=${encodeURIComponent(item.gmail_id)}`
+      url: `${DASHBOARD}/?id=${encodeURIComponent(item.gmail_id)}`
     });
   });
 
