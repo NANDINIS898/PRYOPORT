@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { api } from "./api";
 import EmailCard from "./Emailcard";
 import RulesPanel from "./Rulespanel";
-import Onboarding from "./Onboarding";
+
 
 function getFocusId() {
   return new URLSearchParams(window.location.search).get("id");
