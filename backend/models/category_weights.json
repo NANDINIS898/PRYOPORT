@@ -1,17 +1,19 @@
-{
-  "interview": 35,
-  "job": 30,
-  "internship": 30,
-  "hackathon": 25,
-  "test":30,
-  "deadline": 30,
-  "task": 20,
-  "exam": 25,
-  "offer": 40,
 
-  "promotion": -20,
-  "spam": -50,
-  "newsletter": -25,
+
+{
+  "interview": 40,
+  "job": 25,
+  "internship": 25,
+  "hackathon": 20,
+  "test": 30,
+  "deadline": 35,
+  "task": 25,
+  "exam": 30,
+  "offer": 20,
+
+  "promotion": -25,
+  "spam": -60,
+  "newsletter": -35,
 
   "general": 0
 }
