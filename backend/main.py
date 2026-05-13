@@ -19,6 +19,8 @@ from routes.rules_routes import router as rules_router
 from routes.extension_routes import router as extension_router
 from routes import interaction_routes
 from routes.dashboard_routes import router as dashboard_router
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import Response
 
 from dbmodel import init_db
 
@@ -42,8 +44,6 @@ def startup():
 # ==========================================================
 # CHROME EXTENSION CORS
 # ==========================================================
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi.responses import Response
 
 class ChromeExtensionCORS(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
