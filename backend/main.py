@@ -45,52 +45,27 @@ def startup():
 # CHROME EXTENSION CORS
 # ==========================================================
 
-class ChromeExtensionCORS(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-
-        origin = request.headers.get("origin", "")
-
-        # HANDLE PREFLIGHT OPTIONS
-        if request.method == "OPTIONS":
-            response = Response()
-
-        else:
-            response = await call_next(request)
-
-        # Allow Chrome extension
-        if origin.startswith("chrome-extension://"):
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "*"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-
-        return response
-# IMPORTANT:
-# Extension middleware FIRST
-app.add_middleware(ChromeExtensionCORS)
-
-
-# ==========================================================
-# WEBSITE CORS
-# ==========================================================
-
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-
-    # YOUR VERCEL FRONTEND
-    "https://pryoport-frontend.vercel.app",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "https://pryoport-frontend.vercel.app",
+    ],
+
+    # IMPORTANT
+    allow_origin_regex=r"chrome-extension://.*",
+
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ==========================================================
+# WEBSITE CORS
+# ==========================================================
 
 
 # ==========================================================
