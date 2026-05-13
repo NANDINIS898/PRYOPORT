@@ -5,16 +5,17 @@ export default function Onboarding() {
 
   const steps = [
     {
-      num: "01",
-      icon: "🧩",
-      title: "Install the Chrome Extension",
-      desc: "PrYoPort works through a Chrome extension that reads your Gmail inbox and syncs emails to your dashboard.",
-      action: null, // replace with your extension link when published
-      actionLabel: "Download Extension",
-      color: "#38bdf8",
-      bg: "rgba(56,189,248,0.08)",
-      border: "rgba(56,189,248,0.2)",
-    },
+  num: "01",
+  icon: "🧩",
+  title: "Install the Chrome Extension",
+  desc: "Download the extension zip, unzip it, then open chrome://extensions → turn on Developer mode → Load unpacked → select the unzipped folder.",
+  action: "https://github.com/NANDINIS898/pryoport/releases/latest/download/pryoport-extension.zip",
+  actionLabel: "Download Extension",
+  color: "#38bdf8",
+  bg: "rgba(56,189,248,0.08)",
+  border: "rgba(56,189,248,0.2)",
+},
+   
     {
       num: "02",
       icon: "🔐",
