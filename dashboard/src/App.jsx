@@ -2,121 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { api } from "./api";
 import EmailCard from "./Emailcard";
 import RulesPanel from "./Rulespanel";
+import Onboarding from "./Onboarding"; 
 
 
 function getFocusId() {
   return new URLSearchParams(window.location.search).get("id");
 }
 
-// ── ONBOARDING ──────────────────────────────────────────────────
-function Onboarding() {
-  const mono = { fontFamily: "monospace" };
-  const steps = [
-    {
-      num: "01", icon: "🧩",
-      title: "Install the Chrome Extension",
-      desc: "PrYoPort works through a Chrome extension that reads your Gmail and syncs emails to this dashboard.",
-      color: "#38bdf8", bg: "rgba(56,189,248,0.07)", border: "rgba(56,189,248,0.18)",
-    },
-    {
-      num: "02", icon: "🔐",
-      title: "Sign in with Google",
-      desc: "Click the PrYoPort icon in your Chrome toolbar and log in with your Google account to grant Gmail access.",
-      color: "#a78bfa", bg: "rgba(167,139,250,0.07)", border: "rgba(167,139,250,0.18)",
-    },
-    {
-      num: "03", icon: "⚡",
-      title: "Sync your inbox",
-      desc: "Hit Sync in the extension. The AI reads, scores and prioritises your emails — they appear here instantly.",
-      color: "#4ade80", bg: "rgba(74,222,128,0.07)", border: "rgba(74,222,128,0.18)",
-    },
-  ];
-  const pills = ["🔥 AI priority", "📋 Smart rules", "🔔 Urgent alerts", "🤖 CrewAI agents", "⚡ Groq LLM"];
-
-  return (
-    <div style={{ minHeight: "70vh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      padding: "48px 16px", textAlign: "center" }}>
-
-      <div style={{ marginBottom: 52 }}>
-        <div style={{ fontSize: 56, marginBottom: 16,
-          filter: "drop-shadow(0 0 28px rgba(56,189,248,0.55))" }}>⚡</div>
-        <h1 style={{ fontSize: "clamp(26px,5vw,44px)", fontWeight: 900,
-          letterSpacing: "-1.5px", margin: "0 0 14px",
-          background: "linear-gradient(135deg,#e2e8f0 0%,#38bdf8 100%)",
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          Welcome to PrYoPort
-        </h1>
-        <p style={{ color: "#64748b", fontSize: 15, maxWidth: 460,
-          margin: "0 auto", lineHeight: 1.8 }}>
-          Your AI-powered Gmail command centre.
-          Get started in 3 steps — takes less than 2 minutes.
-        </p>
-      </div>
-
-      <div style={{ display: "grid",
-        gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
-        gap: 14, width: "100%", maxWidth: 860, marginBottom: 44 }}>
-        {steps.map((s, i) => (
-          <div key={i}
-            style={{ background: s.bg, border: `1px solid ${s.border}`,
-              borderRadius: 14, padding: "26px 22px", textAlign: "left",
-              transition: "transform 0.2s, box-shadow 0.2s" }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = "translateY(-4px)";
-              e.currentTarget.style.boxShadow = `0 12px 32px ${s.bg}`;
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "none";
-            }}>
-            <div style={{ ...mono, fontSize: 10, fontWeight: 700,
-              color: s.color, letterSpacing: 2, marginBottom: 14, opacity: 0.8 }}>
-              STEP {s.num}
-            </div>
-            <div style={{ display: "flex", alignItems: "center",
-              gap: 10, marginBottom: 12 }}>
-              <span style={{ fontSize: 24 }}>{s.icon}</span>
-              <span style={{ fontWeight: 800, fontSize: 14,
-                color: "#e2e8f0", lineHeight: 1.3 }}>{s.title}</span>
-            </div>
-            <p style={{ color: "#64748b", fontSize: 13,
-              lineHeight: 1.75, margin: 0 }}>{s.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <a href="#"
-        style={{ display: "inline-flex", alignItems: "center", gap: 8,
-          padding: "12px 28px", borderRadius: 10, marginBottom: 36,
-          background: "rgba(56,189,248,0.1)",
-          border: "1px solid rgba(56,189,248,0.35)",
-          color: "#38bdf8", fontSize: 13, fontWeight: 800,
-          fontFamily: "monospace", textDecoration: "none",
-          letterSpacing: 0.5, transition: "all 0.15s" }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(56,189,248,0.2)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(56,189,248,0.1)"}>
-        🧩 Download Chrome Extension
-      </a>
-
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap",
-        justifyContent: "center", marginBottom: 36 }}>
-        {pills.map((p, i) => (
-          <span key={i} style={{ background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20,
-            padding: "5px 14px", fontSize: 12, color: "#475569",
-            fontFamily: "monospace" }}>{p}</span>
-        ))}
-      </div>
-
-      <p style={{ ...mono, fontSize: 11, color: "#1e3a52" }}>
-        Already installed?&nbsp;
-        <span style={{ color: "#38bdf8" }}>Click Sync in the extension</span>
-        &nbsp;to load your emails here.
-      </p>
-    </div>
-  );
-}
 
 // ── SPINNER ─────────────────────────────────────────────────────
 function Spinner({ message }) {
