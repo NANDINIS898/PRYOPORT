@@ -1,20 +1,26 @@
 import os
 from google_auth_oauthlib.flow import Flow
 
-BASE_DIR = os.path.dirname(__file__)
-
-CLIENT_SECRETS_FILE = os.path.join(
-    BASE_DIR,
-    "credentials.json"
-)
-
-SCOPES = [
-    "https://www.googleapis.com/auth/gmail.readonly"
-]
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def get_flow():
-    return Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
+
+    client_config = {
+        "web": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "project_id": "pryoport",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "redirect_uris": [
+                "https://pryoport-backend.onrender.com/oauth2callback"
+            ]
+        }
+    }
+
+    return Flow.from_client_config(
+        client_config,
         scopes=SCOPES,
         redirect_uri="https://pryoport-backend.onrender.com/oauth2callback"
     )
