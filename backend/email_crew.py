@@ -145,13 +145,40 @@ Body:
     # ======================================
     score = max(0, min(100, int(score)))
 
-    # ======================================
+        # ======================================
     # STEP 5 → PRIORITY LABEL
     # ======================================
-    if score >= 75:
+
+    high_priority_terms = [
+        "interview",
+        "assessment",
+        "online assessment",
+        "oa",
+        "coding round",
+        "technical round",
+        "hackerrank",
+        "test link",
+        "deadline",
+        "last date",
+        "tomorrow",
+        "today",
+        "scheduled",
+        "shortlisted",
+        "selected"
+    ]
+
+    combined_text = f"{subject} {snippet}".lower()
+
+    # smart escalation for important job/test emails
+    contains_high_signal = any(
+        term in combined_text
+        for term in high_priority_terms
+    )
+
+    if score >= 70 or (score >= 40 and contains_high_signal):
         priority = "high"
 
-    elif score >= 50:
+    elif score >= 35:
         priority = "medium"
 
     else:
