@@ -20,7 +20,19 @@ from routes.dashboard_routes import router as dashboard_router
 
 
 from dbmodel import init_db
+from starlette.middleware.base import BaseHTTPMiddleware
 
+# Add this class ABOVE your app = FastAPI() line
+class ChromeExtensionCORS(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        origin = request.headers.get("origin", "")
+        response = await call_next(request)
+        if origin.startswith("chrome-extension://"):
+            response.headers["Access-Control-Allow-Origin"]      = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"]     = "*"
+            response.headers["Access-Control-Allow-Headers"]     = "*"
+        return response
 
 app = FastAPI()
 @app.on_event("startup")
