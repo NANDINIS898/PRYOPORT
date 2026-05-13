@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "AI-powered productivity assistant.",
   "permissions": ["identity", "storage", "tabs", "scripting","notifications", "alarms"],
-  "host_permissions": ["http://127.0.0.1:8000/*"],
+  "host_permissions": ["https://pryoport-backend.onrender.com*"],
   "background": {
     "service_worker": "background.js"
   },
