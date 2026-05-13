@@ -1,15 +1,13 @@
-
 import { useState, useEffect, useRef } from "react";
 import { api } from "./api";
-import EmailCard from "./components/EmailCard";
-import RulesPanel from "./components/RulesPanel";
+import EmailCard from "./Emailcard";
+import RulesPanel from "./Rulespanel";
 import Onboarding from "./Onboarding";
- 
-// Read ?id= from URL so a notification click can highlight a specific email
+
 function getFocusId() {
   return new URLSearchParams(window.location.search).get("id");
 }
- 
+
 // ── SPINNER ─────────────────────────────────────────────────────
 function Spinner({ message }) {
   return (
@@ -22,7 +20,7 @@ function Spinner({ message }) {
     </div>
   );
 }
- 
+
 // ── APP ─────────────────────────────────────────────────────────
 export default function App() {
   const [emails, setEmails]   = useState([]);
@@ -32,16 +30,24 @@ export default function App() {
   const [error, setError]     = useState(false);
   const [waking, setWaking]   = useState(false);
   const [auth, setAuth]       = useState(null);
-  const focusId               = getFocusId();
-  const highlightRef          = useRef(null);
- 
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Read focusId fresh each render so it reflects the current URL
+  const focusId    = getFocusId();
+  const highlightRef = useRef(null);
+
+  // ── Auto-switch tab to "all" when arriving from a notification link ──
+  useEffect(() => {
+    if (focusId) setTab("all");
+  }, [focusId]);
+
   async function load() {
     setLoading(true);
     setError(false);
- 
-    // after 4s show "waking up" message for Render cold start
+
+    // Show "waking up" banner after 4 s (Render cold start)
     const wakeTimer = setTimeout(() => setWaking(true), 4000);
- 
+
     try {
       const [dash, authData] = await Promise.all([
         api.getDashboard(),
@@ -60,16 +66,31 @@ export default function App() {
       setLoading(false);
     }
   }
- 
+
+  // Initial load
   useEffect(() => { load(); }, []);
- 
+
+  // ── Auto-retry when coming from a notification and inbox is still empty ──
+  // Render cold-starts can return an empty list on the first call;
+  // retry up to 3 times (with 3-second gaps) before giving up.
+  useEffect(() => {
+    if (!loading && focusId && emails.length === 0 && !error && retryCount < 3) {
+      const t = setTimeout(() => {
+        setRetryCount(c => c + 1);
+        load();
+      }, 3000);
+      return () => clearTimeout(t);
+    }
+  }, [loading, focusId, emails.length, error, retryCount]);
+
+  // ── Scroll the focused card into view once emails are loaded ──
   useEffect(() => {
     if (focusId && highlightRef.current) {
       setTimeout(() => highlightRef.current?.scrollIntoView(
         { behavior: "smooth", block: "center" }), 300);
     }
-  }, [emails]);
- 
+  }, [emails, focusId]);
+
   function onUpdate(id, changes) {
     setEmails(prev => prev.map(e =>
       e.gmail_id === id ? { ...e, ...changes } : e));
@@ -77,7 +98,7 @@ export default function App() {
   function onDelete(id) {
     setEmails(prev => prev.filter(e => e.gmail_id !== id));
   }
- 
+
   const filtered = emails.filter(e => {
     if (tab === "all")    return e.is_read !== 1;
     if (tab === "high")   return e.priority === "high"   && e.is_read !== 1;
@@ -85,22 +106,28 @@ export default function App() {
     if (tab === "read")   return e.is_read === 1;
     return true;
   });
- 
+
   const highCount = emails.filter(e => e.priority === "high"   && e.is_read !== 1).length;
   const medCount  = emails.filter(e => e.priority === "medium" && e.is_read !== 1).length;
   const readCount = emails.filter(e => e.is_read === 1).length;
+
+  // ── KEY FIX: only show Onboarding when there are truly no emails
+  //    AND we are NOT here because of a notification click (focusId present).
+  const isComingFromNotification = Boolean(focusId);
   const hasEmails = emails.length > 0;
-  const mono      = { fontFamily: "monospace" };
- 
+  const showOnboarding = !hasEmails && !isComingFromNotification;
+
+  const mono = { fontFamily: "monospace" };
+
   return (
     <div style={{ minHeight: "100vh", background: "#050b17",
       color: "#dce8f5", fontFamily: "'Syne','Segoe UI',sans-serif" }}>
- 
+
       {/* Grid texture */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
         backgroundImage: "linear-gradient(rgba(56,189,248,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.012) 1px,transparent 1px)",
         backgroundSize: "40px 40px" }} />
- 
+
       {/* ── TOPBAR ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100,
         background: "rgba(5,11,23,0.92)", backdropFilter: "blur(20px)",
@@ -108,7 +135,7 @@ export default function App() {
         padding: "0 32px", height: 60,
         display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: 20 }}>
- 
+
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 22,
             filter: "drop-shadow(0 0 12px rgba(56,189,248,0.8))" }}>⚡</span>
@@ -121,7 +148,7 @@ export default function App() {
             </div>
           </div>
         </div>
- 
+
         {hasEmails && (
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {[
@@ -141,7 +168,7 @@ export default function App() {
             ))}
           </div>
         )}
- 
+
         {auth && (
           <div style={{ ...mono, fontSize: 11,
             color: auth.logged_in ? "#22c55e" : "#f43f5e" }}>
@@ -151,11 +178,11 @@ export default function App() {
           </div>
         )}
       </nav>
- 
+
       {/* ── MAIN ── */}
       <main style={{ position: "relative", zIndex: 1, maxWidth: 1200,
         margin: "0 auto", padding: "28px 32px 60px" }}>
- 
+
         {/* Tab bar — only when emails exist */}
         {hasEmails && !loading && (
           <div style={{ display: "flex", gap: 6, marginBottom: 22, flexWrap: "wrap" }}>
@@ -185,13 +212,17 @@ export default function App() {
             </button>
           </div>
         )}
- 
+
         {/* ── CONTENT ── */}
         {loading ? (
-          <Spinner message={waking
-            ? "Server is waking up… this takes ~30s on first visit ⏳"
-            : "Connecting to PrYoPort…"} />
- 
+          <Spinner message={
+            waking
+              ? "Server is waking up… this takes ~30s on first visit ⏳"
+              : isComingFromNotification
+                ? `Loading your email… (${retryCount > 0 ? `retry ${retryCount}/3` : "connecting"})`
+                : "Connecting to PrYoPort…"
+          } />
+
         ) : error ? (
           <div style={{ textAlign: "center", padding: 80 }}>
             <div style={{ fontSize: 36, marginBottom: 16 }}>⚠️</div>
@@ -206,10 +237,27 @@ export default function App() {
               ↻ Try again
             </button>
           </div>
- 
-        ) : !hasEmails ? (
+
+        ) : showOnboarding ? (
+          // Only show onboarding when NOT arriving from a notification
           <Onboarding />
- 
+
+        ) : !hasEmails && isComingFromNotification ? (
+          // Arriving from notification but still no emails after retries
+          <div style={{ textAlign: "center", padding: 80 }}>
+            <div style={{ fontSize: 36, marginBottom: 16 }}>📭</div>
+            <div style={{ color: "#4a6080", ...mono, fontSize: 13, marginBottom: 20 }}>
+              Could not load the email. It may have already been read or deleted.
+            </div>
+            <button onClick={() => { window.history.replaceState({}, "", "/"); load(); }}
+              style={{ padding: "10px 24px", borderRadius: 8, cursor: "pointer",
+                background: "rgba(56,189,248,0.1)",
+                border: "1px solid rgba(56,189,248,0.3)",
+                color: "#38bdf8", ...mono, fontSize: 12 }}>
+              Go to Dashboard
+            </button>
+          </div>
+
         ) : tab === "rules" ? (
           <div>
             <div style={{ ...mono, fontSize: 11, fontWeight: 600,
@@ -217,7 +265,7 @@ export default function App() {
               color: "#4a6080", marginBottom: 12 }}>— Priority Rules</div>
             <RulesPanel rules={rules} onUpdate={load} />
           </div>
- 
+
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: 80, color: "#4a6080" }}>
             <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.3 }}>📭</div>
@@ -225,7 +273,7 @@ export default function App() {
               No {tab === "read" ? "read" : tab} emails right now
             </div>
           </div>
- 
+
         ) : (
           <div style={{ display: "grid",
             gridTemplateColumns: "repeat(auto-fill,minmax(360px,1fr))",
@@ -244,7 +292,7 @@ export default function App() {
           </div>
         )}
       </main>
- 
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap');
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
