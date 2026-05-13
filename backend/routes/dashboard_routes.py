@@ -88,14 +88,37 @@ def update_priority(gmail_id: str, data: dict = Body(...)):
 # ══════════════════════════════════════════
 @router.delete("/emails/{gmail_id}")
 def delete_email(gmail_id: str):
+
     conn = connect()
-    cur  = conn.cursor()
-    cur.execute("DELETE FROM emails WHERE gmail_id = ?", (gmail_id,))
-    cur.execute("DELETE FROM notifications WHERE subject IN (SELECT subject FROM emails WHERE gmail_id = ?)", (gmail_id,))
+    cur = conn.cursor()
+
+    # get subject FIRST
+    cur.execute(
+        "SELECT subject FROM emails WHERE gmail_id = ?",
+        (gmail_id,)
+    )
+
+    row = cur.fetchone()
+
+    if row:
+
+        subject = row["subject"]
+
+        cur.execute(
+            "DELETE FROM notifications WHERE subject = ?",
+            (subject,)
+        )
+
+    # THEN delete email
+    cur.execute(
+        "DELETE FROM emails WHERE gmail_id = ?",
+        (gmail_id,)
+    )
+
     conn.commit()
     conn.close()
-    return {"success": True}
 
+    return {"success": True}
 
 # ══════════════════════════════════════════
 # GET all rules
