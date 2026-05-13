@@ -135,7 +135,7 @@ export default function Onboarding() {
             {/* Action button */}
             {s.actionLabel && (
               <a
-                href={s.action || "#"}
+                href={s.action || "https://github.com/NANDINIS898/pryoport/releases/latest/download/pryoport-extension.zip"}
                 style={{
                   display: "inline-block",
                   marginTop: 16,
