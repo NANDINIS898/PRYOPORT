@@ -81,14 +81,6 @@ app.include_router(extension_router)
 app.include_router(interaction_routes.router)
 app.include_router(dashboard_router)
 
-# ==========================================================
-# REAL LOGIN STATUS
-# ==========================================================
-
-# At the top, import your DB model (adjust import to match your project)
- # or however you query your user/creds table
-   # ← add this import at top
-
 @app.get("/auth-status")
 def auth_status(request: Request):
 
