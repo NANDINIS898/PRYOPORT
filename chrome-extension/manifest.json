@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "AI-powered productivity assistant.",
   "permissions": ["identity", "storage", "tabs", "scripting","notifications", "alarms"],
-  "host_permissions": ["https://pryoport-backend.onrender.com*"],
+  "host_permissions": ["https://pryoport-backend.onrender.com*", "https://mail.google.com/*"],
   "background": {
     "service_worker": "background.js"
   },
