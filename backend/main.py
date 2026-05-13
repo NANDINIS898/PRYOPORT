@@ -55,7 +55,7 @@ app.add_middleware(
     SessionMiddleware,
     secret_key="supersecretkey",
     same_site="none",
-    https_only=False
+    https_only=True
 )
 
 # ==========================================================
