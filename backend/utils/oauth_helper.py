@@ -7,5 +7,5 @@ def get_flow():
     return Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
-        redirect_uri="http://127.0.0.1:8000/oauth2callback"
+        redirect_uri = "https://pryoport-backend.onrender.com" + "/auth/callback"
     )
