@@ -38,6 +38,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",       # React dashboard
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        os.getenv("FRONTEND_URL", ""),
     ],
     allow_credentials=True,
     allow_methods=["*"],
