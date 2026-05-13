@@ -8,7 +8,7 @@ const req = (url, opts = {}) =>
   });
 
 export const api = {
-  getDashboard:   ()        => req("/api/dashboard").catch(() => ({ emails: [], rules: [] })),
+  getDashboard: () => req("/api/dashboard"),
   markRead:       (id)      => req(`/api/emails/${encodeURIComponent(id)}/read`,     { method: "PATCH" }),
   updatePriority: (id, p)   => req(`/api/emails/${encodeURIComponent(id)}/priority`, {
     method: "PATCH",
