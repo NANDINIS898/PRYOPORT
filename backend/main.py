@@ -42,6 +42,7 @@ def startup():
 # ==========================================================
 # CORS
 # ==========================================================
+app.add_middleware(ChromeExtensionCORS)  # ← add this line first
 
 app.add_middleware(
     CORSMiddleware,
