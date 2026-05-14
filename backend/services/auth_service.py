@@ -1,8 +1,7 @@
-user_token = None
+
 
 def store_user_token(user_id, creds):
-    global user_token
-    user_token = creds
+    pass  # no-op — session handles this now
 
 def get_user_token():
-    return user_token
+    return None  # no-op — use request.session instead
