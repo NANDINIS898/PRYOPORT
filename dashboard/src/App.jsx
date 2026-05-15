@@ -144,7 +144,7 @@ export default function App() {
   //    AND we are NOT here because of a notification click (focusId present).
   const isComingFromNotification = Boolean(focusId);
   const hasEmails = emails.length > 0;
-  const showOnboarding = !hasEmails && !isComingFromNotification;
+  
 
   const mono = { fontFamily: "monospace" };
   // ✅ AUTH CHECK LOADING
@@ -278,9 +278,7 @@ export default function App() {
             </button>
           </div>
 
-        ) : showOnboarding ? (
-          // Only show onboarding when NOT arriving from a notification
-          <Onboarding />
+        
 
         ) : !hasEmails && isComingFromNotification ? (
           // Arriving from notification but still no emails after retries
