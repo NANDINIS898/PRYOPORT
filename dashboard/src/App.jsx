@@ -103,7 +103,7 @@ export default function App() {
   // Render cold-starts can return an empty list on the first call;
   // retry up to 3 times (with 3-second gaps) before giving up.
   useEffect(() => {
-    if (!loading && focusId && emails.length === 0 && !error && retryCount < 3) {
+    if (!loading && focusId && emails.length === 0 && !error && retryCount < 3 &&  isAuthenticated) {
       const t = setTimeout(() => {
         setRetryCount(c => c + 1);
         load();
