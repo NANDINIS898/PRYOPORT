@@ -30,6 +30,9 @@ export default function App() {
   const [error, setError]     = useState(false);
   const [waking, setWaking]   = useState(false);
   const [auth, setAuth]       = useState(null);
+  // ✅ NEW AUTH GATE STATES
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
   // Read focusId fresh each render so it reflects the current URL
@@ -67,8 +70,34 @@ export default function App() {
     }
   }
 
-  // Initial load
-  useEffect(() => { load(); }, []);
+  
+  // ✅ NEW AUTH CHECK EFFECT
+  useEffect(() => {
+    async function init() {
+      try {
+        const authData = await api.getAuthStatus();
+
+        setAuth(authData);
+
+        if (authData.logged_in) {
+          setIsAuthenticated(true);
+
+          await load();
+        } else {
+          setIsAuthenticated(false);
+
+          setEmails([]);
+          setRules([]);
+        }
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setAuthChecked(true);
+      }
+    }
+
+    init();
+  }, []);
 
   // ── Auto-retry when coming from a notification and inbox is still empty ──
   // Render cold-starts can return an empty list on the first call;
@@ -118,6 +147,17 @@ export default function App() {
   const showOnboarding = !hasEmails && !isComingFromNotification;
 
   const mono = { fontFamily: "monospace" };
+  // ✅ AUTH CHECK LOADING
+  if (!authChecked) {
+    return (
+      <Spinner message="Checking authentication..." />
+    );
+  }
+
+  // ✅ SHOW ONBOARDING IF NOT AUTHENTICATED
+  if (!isAuthenticated) {
+    return <Onboarding />;
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#050b17",
