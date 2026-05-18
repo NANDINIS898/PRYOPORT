@@ -180,7 +180,8 @@ export default function Onboarding() {
       ref={containerRef}
       style={{
         position: "relative",
-        minHeight: "80vh",
+        minHeight: "100vh",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -188,6 +189,16 @@ export default function Onboarding() {
         padding: "60px 20px",
         textAlign: "center",
         overflow: "hidden",
+        background:
+          "radial-gradient(ellipse at top, #0a1628 0%, #050b17 55%, #02060d 100%)",
+        color: "#dce8f5",
+        fontFamily: "'Syne','Segoe UI',sans-serif",
+        backgroundImage: `
+          radial-gradient(ellipse at top, #0a1628 0%, #050b17 55%, #02060d 100%),
+          linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px)
+        `,
+        backgroundSize: "auto, 44px 44px, 44px 44px",
       }}
     >
       {/* ── Cursor aura ─────────────────────────────── */}
