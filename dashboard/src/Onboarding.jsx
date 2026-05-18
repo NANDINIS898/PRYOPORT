@@ -30,20 +30,27 @@ const SYMBOLS = [
   { c: "</div>",    x: 74, y: 68, size: 16, color: "#64748b", depth: 0.5, drift: "driftB" },
 ];
 
-// Repulsion: closer cursor pushes the symbol harder.
+// Combined force: global anti-parallax (always on) + local repulsion (when near).
 function computeForce(sx, sy, mx, my, depth) {
   if (mx < 0) return { tx: 0, ty: 0, scale: 1, glow: 0 };
+
+  // Global anti-parallax: cursor right → symbol left, etc.
+  const GLOBAL = 80;
+  const gx = -((mx - 50) / 50) * GLOBAL * depth;
+  const gy = -((my - 50) / 50) * GLOBAL * depth;
+
+  // Local repulsion: extra scatter + glow when cursor is close.
   const dx = sx - mx;
   const dy = sy - my;
   const dist = Math.hypot(dx, dy);
-  const RADIUS = 22;                       // % of container
-  if (dist >= RADIUS) return { tx: 0, ty: 0, scale: 1, glow: 0 };
-  const f = (RADIUS - dist) / RADIUS;      // 0..1
+  const RADIUS = 22;
+  if (dist >= RADIUS) return { tx: gx, ty: gy, scale: 1, glow: 0 };
+  const f  = (RADIUS - dist) / RADIUS;
   const nx = dist > 0 ? dx / dist : 0;
   const ny = dist > 0 ? dy / dist : 0;
   return {
-    tx:    nx * f * 55 * depth,
-    ty:    ny * f * 55 * depth,
+    tx:    gx + nx * f * 55 * depth,
+    ty:    gy + ny * f * 55 * depth,
     scale: 1 + f * 0.55 * depth,
     glow:  f,
   };

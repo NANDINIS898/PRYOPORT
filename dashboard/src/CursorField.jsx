@@ -3,26 +3,33 @@
 // a `position: fixed` wrapper and ignore layout entirely.
 import { useEffect, useRef, useState } from "react";
 
-function computeForce(sx, sy, mx, my, depth, radius, strength) {
+function computeForce(sx, sy, mx, my, depth, radius, strength, globalStrength) {
   if (mx < 0) return { tx: 0, ty: 0, scale: 1, glow: 0 };
+
+  // Global anti-parallax — every shape slides opposite to where the cursor
+  // is relative to the centre of the viewport. Cursor right → shape left.
+  const gx = -((mx - 50) / 50) * globalStrength * depth;
+  const gy = -((my - 50) / 50) * globalStrength * depth;
+
+  // Local repulsion — extra scatter + glow when the cursor is *near* a shape.
   const dx = sx - mx;
   const dy = sy - my;
   const dist = Math.hypot(dx, dy);
-  if (dist >= radius) return { tx: 0, ty: 0, scale: 1, glow: 0 };
-  const f = (radius - dist) / radius;
+  if (dist >= radius) return { tx: gx, ty: gy, scale: 1, glow: 0 };
+  const f  = (radius - dist) / radius;
   const nx = dist > 0 ? dx / dist : 0;
   const ny = dist > 0 ? dy / dist : 0;
   return {
-    tx:    nx * f * strength * depth,
-    ty:    ny * f * strength * depth,
+    tx:    gx + nx * f * strength * depth,
+    ty:    gy + ny * f * strength * depth,
     scale: 1 + f * 0.4 * depth,
     glow:  f,
   };
 }
 
-function Shape({ s, mouse, radius, strength }) {
+function Shape({ s, mouse, radius, strength, globalStrength }) {
   const { tx, ty, scale, glow } = computeForce(
-    s.x, s.y, mouse.x, mouse.y, s.depth, radius, strength
+    s.x, s.y, mouse.x, mouse.y, s.depth, radius, strength, globalStrength
   );
   return (
     <div style={{
@@ -63,7 +70,12 @@ function Shape({ s, mouse, radius, strength }) {
   );
 }
 
-export default function CursorField({ shapes, radius = 18, strength = 30 }) {
+export default function CursorField({
+  shapes,
+  radius = 18,
+  strength = 30,
+  globalStrength = 60,   // px max anti-parallax offset (× shape.depth)
+}) {
   const rafRef     = useRef(null);
   const pendingRef = useRef({ x: -9999, y: -9999 });
   const [mouse, setMouse] = useState({ x: -9999, y: -9999 });
@@ -93,7 +105,7 @@ export default function CursorField({ shapes, radius = 18, strength = 30 }) {
       overflow: "hidden",
     }}>
       {shapes.map((s, i) => (
-        <Shape key={i} s={s} mouse={mouse} radius={radius} strength={strength} />
+        <Shape key={i} s={s} mouse={mouse} radius={radius} strength={strength} globalStrength={globalStrength} />
       ))}
       <style>{`
         @keyframes cfDriftA { 0%,100%{translate:0 0} 50%{translate:8px -10px} }
