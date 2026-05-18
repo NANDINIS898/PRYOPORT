@@ -84,11 +84,15 @@ function FloatingSymbol({ s, mouse }) {
   );
 }
 
-export default function Onboarding() {
+export default function Onboarding({ auth }) {
   const containerRef = useRef(null);
   const rafRef       = useRef(null);
   const pendingRef   = useRef({ x: -9999, y: -9999 });
   const [mouse, setMouse] = useState({ x: -9999, y: -9999 });
+
+  // Connection status derived from auth (polled in App.jsx)
+  const isConnected = Boolean(auth?.logged_in);
+  const userEmail   = auth?.email || "";
 
   // rAF-throttled mouse tracking, in % of container
   useEffect(() => {
@@ -201,6 +205,49 @@ export default function Onboarding() {
         backgroundSize: "auto, 44px 44px, 44px 44px",
       }}
     >
+      {/* ── Connection status pill (top-right) ──────── */}
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 24,
+          zIndex: 5,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "8px 14px",
+          borderRadius: 999,
+          background: isConnected
+            ? "rgba(34,197,94,0.08)"
+            : "rgba(244,63,94,0.06)",
+          border: `1px solid ${isConnected ? "rgba(34,197,94,0.35)" : "rgba(244,63,94,0.3)"}`,
+          backdropFilter: "blur(8px)",
+          fontFamily: "monospace",
+          fontSize: 11,
+          color: isConnected ? "#4ade80" : "#fb7185",
+          fontWeight: 700,
+          letterSpacing: 0.5,
+          boxShadow: isConnected
+            ? "0 0 20px -6px rgba(34,197,94,0.5)"
+            : "0 0 20px -10px rgba(244,63,94,0.4)",
+          transition: "all 240ms ease",
+        }}
+      >
+        <span
+          className="statusDot"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: isConnected ? "#22c55e" : "#f43f5e",
+            boxShadow: `0 0 10px ${isConnected ? "#22c55e" : "#f43f5e"}`,
+          }}
+        />
+        {isConnected
+          ? `EXTENSION CONNECTED${userEmail ? ` · ${userEmail}` : ""}`
+          : "EXTENSION NOT CONNECTED"}
+      </div>
+
       {/* ── Cursor aura ─────────────────────────────── */}
       {mouse.x > 0 && (
         <div
@@ -398,6 +445,12 @@ export default function Onboarding() {
                       box-shadow 220ms ease, border-color 220ms ease;
           will-change: transform;
         }
+
+        @keyframes statusPulse {
+          0%,100% { transform: scale(1);   opacity: 1;   }
+          50%     { transform: scale(1.3); opacity: 0.6; }
+        }
+        .statusDot { animation: statusPulse 1.6s ease-in-out infinite; }
       `}</style>
     </div>
   );

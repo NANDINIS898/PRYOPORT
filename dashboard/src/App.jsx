@@ -3,6 +3,25 @@ import { api } from "./api";
 import EmailCard from "./Emailcard";
 import RulesPanel from "./Rulespanel";
 import Onboarding from "./Onboarding";
+import CursorField from "./CursorField";
+
+// Subtle, edge-biased shape field for the authenticated dashboard.
+// Kept sparse and small so it never competes with email content.
+const DASHBOARD_SHAPES = [
+  { c: "•",  x: 4,  y: 14, size: 10, color: "#38bdf8", depth: 0.6, drift: "cfDriftA" },
+  { c: "○",  x: 96, y: 22, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftB" },
+  { c: "◇",  x: 3,  y: 52, size: 12, color: "#4ade80", depth: 0.5, drift: "cfDriftC" },
+  { c: "△",  x: 97, y: 60, size: 12, color: "#38bdf8", depth: 0.4, drift: "cfDriftD" },
+  { c: "▫",  x: 8,  y: 86, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftA" },
+  { c: "/",  x: 92, y: 90, size: 14, color: "#475569", depth: 0.4, drift: "cfDriftB" },
+  { c: "|",  x: 50, y: 8,  size: 16, color: "#334155", depth: 0.3, drift: "cfDriftC" },
+  { c: "+",  x: 6,  y: 32, size: 12, color: "#38bdf8", depth: 0.5, drift: "cfDriftD" },
+  { c: "×",  x: 94, y: 40, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftA" },
+  { c: "·",  x: 30, y: 96, size: 10, color: "#4ade80", depth: 0.3, drift: "cfDriftB" },
+  { c: "◦",  x: 70, y: 96, size: 10, color: "#38bdf8", depth: 0.3, drift: "cfDriftC" },
+  { c: "</>",x: 16, y: 4,  size: 11, color: "#475569", depth: 0.4, drift: "cfDriftD", baseOpacity: 0.12 },
+  { c: "=>", x: 82, y: 4,  size: 11, color: "#475569", depth: 0.4, drift: "cfDriftA", baseOpacity: 0.12 },
+];
 
 function getFocusId() {
   return new URLSearchParams(window.location.search).get("id");
@@ -99,6 +118,23 @@ export default function App() {
     init();
   }, []);
 
+  // ── Poll auth-status while on Onboarding so the dashboard auto-flips
+  //    the moment the user logs in through the Chrome extension ──
+  useEffect(() => {
+    if (!authChecked || isAuthenticated) return;
+    const id = setInterval(async () => {
+      try {
+        const a = await api.getAuthStatus();
+        setAuth(a);
+        if (a.logged_in) {
+          setIsAuthenticated(true);
+          load();
+        }
+      } catch { /* backend cold start — keep trying */ }
+    }, 5000);
+    return () => clearInterval(id);
+  }, [authChecked, isAuthenticated]);
+
   // ── Auto-retry when coming from a notification and inbox is still empty ──
   // Render cold-starts can return an empty list on the first call;
   // retry up to 3 times (with 3-second gaps) before giving up.
@@ -156,7 +192,7 @@ export default function App() {
 
   // ✅ SHOW ONBOARDING IF NOT AUTHENTICATED
   if (!isAuthenticated) {
-    return <Onboarding />;
+    return <Onboarding auth={auth} />;
   }
 
   return (
@@ -167,6 +203,9 @@ export default function App() {
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
         backgroundImage: "linear-gradient(rgba(56,189,248,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.012) 1px,transparent 1px)",
         backgroundSize: "40px 40px" }} />
+
+      {/* Cursor-reactive ambient shapes */}
+      <CursorField shapes={DASHBOARD_SHAPES} radius={16} strength={26} />
 
       {/* ── TOPBAR ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100,
