@@ -32,23 +32,32 @@ function Shape({ s, mouse, radius, strength }) {
       pointerEvents: "none",
       transform: "translate(-50%, -50%)",
     }}>
-      <div
-        className={s.drift}
-        style={{
-          fontFamily: "ui-monospace, 'JetBrains Mono', Menlo, monospace",
-          fontSize: s.size,
-          color: s.color,
-          fontWeight: s.weight ?? 700,
-          opacity: (s.baseOpacity ?? 0.18) + glow * 0.55,
-          textShadow: glow > 0
-            ? `0 0 ${6 + glow * 14}px ${s.color}`
-            : "none",
-          transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
-          transition: "opacity 200ms ease-out, text-shadow 200ms ease-out",
-          willChange: "transform, opacity",
-        }}
-      >
-        {s.c}
+      {/* outer = ambient drift (uses CSS `translate` prop) */}
+      <div className={s.drift}>
+        {/* middle = optional spin (uses CSS `rotate` prop — composes with drift) */}
+        <div
+          className={s.spin ? "cfSpin" : ""}
+          style={{ display: "inline-block" }}
+        >
+          {/* inner = cursor reaction (transform — applies last) */}
+          <div
+            style={{
+              fontFamily: "ui-monospace, 'JetBrains Mono', Menlo, monospace",
+              fontSize: s.size,
+              color: s.color,
+              fontWeight: s.weight ?? 700,
+              opacity: (s.baseOpacity ?? 0.2) + glow * 0.6,
+              textShadow: glow > 0
+                ? `0 0 ${6 + glow * 18}px ${s.color}, 0 0 ${2 + glow * 4}px ${s.color}`
+                : "none",
+              transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
+              transition: "opacity 200ms ease-out, text-shadow 200ms ease-out",
+              willChange: "transform, opacity",
+            }}
+          >
+            {s.c}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -87,14 +96,17 @@ export default function CursorField({ shapes, radius = 18, strength = 30 }) {
         <Shape key={i} s={s} mouse={mouse} radius={radius} strength={strength} />
       ))}
       <style>{`
-        @keyframes cfDriftA { 0%,100%{translate:0 0} 50%{translate:6px -8px} }
-        @keyframes cfDriftB { 0%,100%{translate:0 0} 50%{translate:-10px 6px} }
-        @keyframes cfDriftC { 0%,100%{translate:0 0} 50%{translate:8px 10px} }
-        @keyframes cfDriftD { 0%,100%{translate:0 0} 50%{translate:-7px -10px} }
-        .cfDriftA { animation: cfDriftA 9s  ease-in-out infinite; }
-        .cfDriftB { animation: cfDriftB 11s ease-in-out infinite; }
-        .cfDriftC { animation: cfDriftC 10s ease-in-out infinite; }
-        .cfDriftD { animation: cfDriftD 12s ease-in-out infinite; }
+        @keyframes cfDriftA { 0%,100%{translate:0 0} 50%{translate:8px -10px} }
+        @keyframes cfDriftB { 0%,100%{translate:0 0} 50%{translate:-12px 8px} }
+        @keyframes cfDriftC { 0%,100%{translate:0 0} 50%{translate:10px 12px} }
+        @keyframes cfDriftD { 0%,100%{translate:0 0} 50%{translate:-9px -12px} }
+        .cfDriftA { animation: cfDriftA 7s  ease-in-out infinite; }
+        .cfDriftB { animation: cfDriftB 9s  ease-in-out infinite; }
+        .cfDriftC { animation: cfDriftC 8s  ease-in-out infinite; }
+        .cfDriftD { animation: cfDriftD 10s ease-in-out infinite; }
+
+        @keyframes cfSpin { to { rotate: 360deg; } }
+        .cfSpin { animation: cfSpin 18s linear infinite; }
       `}</style>
     </div>
   );

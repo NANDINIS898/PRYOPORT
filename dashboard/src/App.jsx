@@ -5,22 +5,31 @@ import RulesPanel from "./Rulespanel";
 import Onboarding from "./Onboarding";
 import CursorField from "./CursorField";
 
-// Subtle, edge-biased shape field for the authenticated dashboard.
-// Kept sparse and small so it never competes with email content.
+// One rich cluster (right side, mid-vertical) + a few ambient strays.
+// The cluster sits in the right viewport margin on wide screens; on narrower
+// ones it falls behind the email cards (zIndex 0) so it never blocks clicks.
 const DASHBOARD_SHAPES = [
-  { c: "•",  x: 4,  y: 14, size: 10, color: "#38bdf8", depth: 0.6, drift: "cfDriftA" },
-  { c: "○",  x: 96, y: 22, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftB" },
-  { c: "◇",  x: 3,  y: 52, size: 12, color: "#4ade80", depth: 0.5, drift: "cfDriftC" },
-  { c: "△",  x: 97, y: 60, size: 12, color: "#38bdf8", depth: 0.4, drift: "cfDriftD" },
-  { c: "▫",  x: 8,  y: 86, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftA" },
-  { c: "/",  x: 92, y: 90, size: 14, color: "#475569", depth: 0.4, drift: "cfDriftB" },
-  { c: "|",  x: 50, y: 8,  size: 16, color: "#334155", depth: 0.3, drift: "cfDriftC" },
-  { c: "+",  x: 6,  y: 32, size: 12, color: "#38bdf8", depth: 0.5, drift: "cfDriftD" },
-  { c: "×",  x: 94, y: 40, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftA" },
-  { c: "·",  x: 30, y: 96, size: 10, color: "#4ade80", depth: 0.3, drift: "cfDriftB" },
-  { c: "◦",  x: 70, y: 96, size: 10, color: "#38bdf8", depth: 0.3, drift: "cfDriftC" },
-  { c: "</>",x: 16, y: 4,  size: 11, color: "#475569", depth: 0.4, drift: "cfDriftD", baseOpacity: 0.12 },
-  { c: "=>", x: 82, y: 4,  size: 11, color: "#475569", depth: 0.4, drift: "cfDriftA", baseOpacity: 0.12 },
+  // ─── cluster: spinning hex + orbiting code symbols ───
+  { c: "⬡",   x: 91, y: 24, size: 26, color: "#a78bfa", depth: 1.1, drift: "cfDriftA", spin: true },
+  { c: "</>", x: 86, y: 28, size: 18, color: "#38bdf8", depth: 1.0, drift: "cfDriftB" },
+  { c: "◐",   x: 95, y: 30, size: 18, color: "#4ade80", depth: 0.9, drift: "cfDriftC", spin: true },
+  { c: "{ }", x: 83, y: 34, size: 16, color: "#a78bfa", depth: 0.9, drift: "cfDriftD" },
+  { c: "•",   x: 94, y: 36, size: 10, color: "#38bdf8", depth: 0.7, drift: "cfDriftA" },
+  { c: "=>",  x: 88, y: 40, size: 18, color: "#4ade80", depth: 1.0, drift: "cfDriftB" },
+  { c: "[ ]", x: 93, y: 44, size: 14, color: "#38bdf8", depth: 0.8, drift: "cfDriftC" },
+  { c: "++",  x: 84, y: 46, size: 13, color: "#a78bfa", depth: 0.7, drift: "cfDriftD" },
+  { c: "//",  x: 90, y: 50, size: 13, color: "#475569", depth: 0.6, drift: "cfDriftA" },
+  { c: "◇",   x: 96, y: 52, size: 12, color: "#4ade80", depth: 0.6, drift: "cfDriftB" },
+  { c: "$_",  x: 87, y: 54, size: 15, color: "#38bdf8", depth: 0.8, drift: "cfDriftC" },
+  { c: "&&",  x: 92, y: 58, size: 12, color: "#475569", depth: 0.5, drift: "cfDriftD" },
+
+  // ─── ambient strays (left + bottom edges) ───
+  { c: "·",  x: 4,  y: 48, size: 10, color: "#38bdf8", depth: 0.4, drift: "cfDriftA" },
+  { c: "○",  x: 7,  y: 78, size: 12, color: "#a78bfa", depth: 0.5, drift: "cfDriftB" },
+  { c: "△",  x: 3,  y: 28, size: 10, color: "#4ade80", depth: 0.4, drift: "cfDriftC" },
+  { c: "|",  x: 14, y: 92, size: 14, color: "#334155", depth: 0.3, drift: "cfDriftD" },
+  { c: "+",  x: 50, y: 95, size: 10, color: "#38bdf8", depth: 0.3, drift: "cfDriftA" },
+  { c: "×",  x: 72, y: 94, size: 10, color: "#a78bfa", depth: 0.3, drift: "cfDriftB" },
 ];
 
 function getFocusId() {
@@ -205,7 +214,7 @@ export default function App() {
         backgroundSize: "40px 40px" }} />
 
       {/* Cursor-reactive ambient shapes */}
-      <CursorField shapes={DASHBOARD_SHAPES} radius={16} strength={26} />
+      <CursorField shapes={DASHBOARD_SHAPES} radius={20} strength={50} />
 
       {/* ── TOPBAR ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100,
