@@ -45,7 +45,7 @@ Rules:
 # ==========================================
 # MAIN ORCHESTRATOR PIPELINE
 # ==========================================
-def analyze_email_with_agents(subject, snippet, sender=None):
+def analyze_email_with_agents(subject, snippet, sender=None, user_email=None):
 
     # ======================================
     # LOAD LLM
@@ -127,12 +127,8 @@ Body:
     # ======================================
     try:
 
-        if clean_sender:
-
-            manual = get_manual_priority(
-                clean_sender
-            )
-
+        if clean_sender and user_email:
+            manual = get_manual_priority(user_email, clean_sender)
             if manual == "high":
                 score = max(score, 95)
 

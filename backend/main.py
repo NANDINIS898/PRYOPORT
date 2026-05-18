@@ -56,11 +56,20 @@ app.add_middleware(
 # SESSION
 # ==========================================================
 
+_SESSION_SECRET = os.getenv("SESSION_SECRET")
+if not _SESSION_SECRET:
+    # Fail loud in prod rather than silently using a guessable fallback that
+    # would let any browser holding an old cookie inherit someone else's session.
+    raise RuntimeError(
+        "SESSION_SECRET env var is required. Set it on Render → Environment."
+    )
+
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET", "supersecretkey"),
+    secret_key=_SESSION_SECRET,
     same_site="none",
-    https_only=True
+    https_only=True,
+    max_age=60 * 60 * 24 * 7,  # 7 days — abandoned sessions expire
 )
 
 
@@ -93,12 +102,12 @@ def root():
 @app.get("/auth-status")
 def auth_status(request: Request):
     creds = request.session.get("creds")
+    email = request.session.get("user_email")
 
-    if creds:
-        return {
-            "logged_in": True,
-            "email": request.session.get("user_email", "")
-        }
+    # Both must be present — a session with creds but no email is from the
+    # old single-user schema and must be re-authenticated.
+    if creds and email:
+        return {"logged_in": True, "email": email}
 
     return {"logged_in": False}
 
@@ -110,15 +119,16 @@ def auth_status(request: Request):
 @app.post("/sync")
 def sync_now(request: Request):
     creds = request.session.get("creds")
+    user_email = request.session.get("user_email")
 
-    if not creds:
+    if not creds or not user_email:
         return {
             "success": False,
             "message": "Not logged in. Please click Login in the extension first."
         }
 
     try:
-        processed = sync_emails(creds)
+        processed = sync_emails(user_email, creds)
         return {
             "success": True,
             "message": "Inbox synced",

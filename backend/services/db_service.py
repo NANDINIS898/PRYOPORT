@@ -1,7 +1,5 @@
 import sqlite3
 from config import DB_PATH
-conn = sqlite3.connect(DB_PATH)
-
 
 
 def connect():
@@ -11,18 +9,20 @@ def connect():
 
 
 # =========================================
-# SAVE EMAIL
+# SAVE EMAIL (per-user)
 # =========================================
-def save_email(data):
+def save_email(user_email, data):
     conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
     INSERT OR IGNORE INTO emails
-    (gmail_id, subject, sender, snippet, category, priority, urgency_score, summary)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    (gmail_id, user_email, subject, sender, snippet, category,
+     priority, urgency_score, summary)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data["gmail_id"],
+        user_email,
         data["subject"],
         data["sender"],
         data["snippet"],
@@ -36,14 +36,15 @@ def save_email(data):
     conn.close()
 
 
-def save_notification(data):
+def save_notification(user_email, data):
     conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
-    INSERT INTO notifications (subject, summary, timestamp)
-    VALUES (?, ?, ?)
+    INSERT INTO notifications (user_email, subject, summary, timestamp)
+    VALUES (?, ?, ?, ?)
     """, (
+        user_email,
         data["subject"],
         data["summary"],
         data["timestamp"]
@@ -53,15 +54,17 @@ def save_notification(data):
     conn.close()
 
 
-
 # =========================================
-# CHECK DUPLICATE
+# CHECK DUPLICATE (scoped to this user)
 # =========================================
-def email_exists(gmail_id):
+def email_exists(user_email, gmail_id):
     conn = connect()
     cur = conn.cursor()
 
-    cur.execute("SELECT 1 FROM emails WHERE gmail_id=?", (gmail_id,))
+    cur.execute(
+        "SELECT 1 FROM emails WHERE gmail_id=? AND user_email=?",
+        (gmail_id, user_email)
+    )
     exists = cur.fetchone() is not None
 
     conn.close()
@@ -69,125 +72,120 @@ def email_exists(gmail_id):
 
 
 # =========================================
-# SAVE RULE
+# RULES (per-user)
 # =========================================
-def save_rule(sender, priority):
+def save_rule(user_email, sender, priority):
     conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
-    INSERT OR REPLACE INTO rules (sender, manual_priority)
-    VALUES (?, ?)
-    """, (sender, priority))
+    INSERT INTO rules (user_email, sender, manual_priority)
+    VALUES (?, ?, ?)
+    ON CONFLICT(user_email, sender) DO UPDATE SET manual_priority = excluded.manual_priority
+    """, (user_email, sender, priority))
 
     conn.commit()
     conn.close()
 
 
-# =========================================
-# GET RULE
-# =========================================
-def get_manual_priority(sender):
+def get_manual_priority(user_email, sender):
     conn = connect()
     cur = conn.cursor()
 
-    cur.execute("SELECT manual_priority FROM rules WHERE sender=?", (sender,))
+    cur.execute(
+        "SELECT manual_priority FROM rules WHERE user_email=? AND sender=?",
+        (user_email, sender)
+    )
     row = cur.fetchone()
 
     conn.close()
     return row["manual_priority"] if row else None
 
-def update_sender_score(sender, delta):
-    conn = sqlite3.connect(DB_PATH)
+
+# =========================================
+# SENDER REPUTATION (per-user)
+# =========================================
+def update_sender_score(user_email, sender, delta):
+    conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO sender_reputation (sender, score)
-        VALUES (?, 50)
-        ON CONFLICT(sender) DO NOTHING
-    """, (sender,))
+        INSERT INTO sender_reputation (user_email, sender, score)
+        VALUES (?, ?, 50)
+        ON CONFLICT(user_email, sender) DO NOTHING
+    """, (user_email, sender))
 
     cur.execute("""
         UPDATE sender_reputation
         SET score = MAX(0, MIN(100, score + ?))
-        WHERE sender = ?
-    """, (delta, sender))
+        WHERE user_email = ? AND sender = ?
+    """, (delta, user_email, sender))
 
     conn.commit()
     conn.close()
 
-def mark_old_as_ignored():
-    conn = sqlite3.connect(DB_PATH)
+
+# =========================================
+# IGNORE OLD EMAILS (per-user)
+# =========================================
+def mark_old_as_ignored(user_email):
+    conn = connect()
     cur = conn.cursor()
 
-    # emails not interacted within time window
     cur.execute("""
         SELECT gmail_id, sender FROM emails
-        WHERE gmail_id NOT IN (
-            SELECT gmail_id FROM user_actions
-        )
-    """)
+        WHERE user_email = ?
+          AND gmail_id NOT IN (
+              SELECT gmail_id FROM user_actions WHERE user_email = ?
+          )
+    """, (user_email, user_email))
 
     rows = cur.fetchall()
 
     for gmail_id, sender in rows:
-        log_user_action(gmail_id, "ignored")
-        update_sender_score(sender, -1)
+        cur.execute("""
+            INSERT INTO user_actions (user_email, gmail_id, action)
+            VALUES (?, ?, 'ignored')
+        """, (user_email, gmail_id))
 
     conn.commit()
     conn.close()
 
-def log_user_action(gmail_id, action):
-    conn = sqlite3.connect(DB_PATH)
+    # update reputation in a separate pass (each call opens its own conn)
+    for _, sender in rows:
+        update_sender_score(user_email, sender, -1)
+
+
+def log_user_action(user_email, gmail_id, action):
+    conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO user_actions (gmail_id, action)
-        VALUES (?, ?)
-    """, (gmail_id, action))
+        INSERT INTO user_actions (user_email, gmail_id, action)
+        VALUES (?, ?, ?)
+    """, (user_email, gmail_id, action))
 
     conn.commit()
     conn.close()
 
 
 # =========================================
-# GET NEW NOTIFICATIONS ONLY
+# GET NEW NOTIFICATIONS (per-user)
 # =========================================
-def get_new_notifications(limit=20):
+def get_new_notifications(user_email, limit=20):
     conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
         SELECT gmail_id, subject, summary, priority, created_at
         FROM emails
-        WHERE priority IN ('high', 'medium')
+        WHERE user_email = ?
+          AND priority IN ('high', 'medium')
         ORDER BY created_at DESC
         LIMIT ?
-    """, (limit,))
+    """, (user_email, limit))
 
     rows = cur.fetchall()
     conn.close()
 
     return [dict(row) for row in rows]
-# =========================================
-# CHECK EXTENSION AUTH STATUS
-# =========================================
-def get_extension_auth():
-    """
-    No user table exists, so we infer extension connectivity
-    by checking if any emails have been synced into the DB.
-    Returns dict with logged_in bool and email (if derivable).
-    """
-    conn = connect()
-    cur = conn.cursor()
-
-    # Check if any emails exist (only present if extension synced)
-    cur.execute("SELECT COUNT(*) as total FROM emails")
-    row = cur.fetchone()
-    has_emails = row["total"] > 0
-
-    conn.close()
-    return {
-        "logged_in": has_emails,
-        "source": "extension" if has_emails else None
-    }
