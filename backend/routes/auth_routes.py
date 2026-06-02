@@ -44,6 +44,12 @@ async def oauth_callback(request: Request):
     flow.fetch_token(authorization_response=str(request.url))
 
     creds = flow.credentials
+    print("========== GOOGLE CREDS ==========")
+    print("Access Token:", bool(creds.token))
+    print("Refresh Token:", bool(creds.refresh_token))
+    print("Client ID:", creds.client_id)
+    print("Scopes:", creds.scopes)
+    print("=================================")
 
     if not creds.refresh_token:
         return {
