@@ -11,7 +11,14 @@ def sync_emails(user_email, session_creds):
     mark_old_as_ignored(user_email)
     processed = []
 
-    emails = fetch_emails(session_creds)["emails"]
+    gmail_result = fetch_emails(session_creds)
+    if gmail_result.get("error") == "gmail_reconnect_required":
+        return {
+            "success": False,
+            "error": "gmail_reconnect_required",
+            "message": "Gmail session expired. Please login again."
+        }
+    emails = gmail_result.get("emails", [])
 
     for email in emails:
         gmail_id = email["id"]
@@ -57,4 +64,7 @@ def sync_emails(user_email, session_creds):
             "summary":  summary,
         })
 
-    return processed
+    return {
+        "success": True,
+        "emails": processed
+    }

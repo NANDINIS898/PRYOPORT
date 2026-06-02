@@ -94,5 +94,17 @@ def fetch_emails(session_creds):
         return {"emails": emails}
 
     except Exception as e:
-        print("❌ Gmail Fetch Error:", str(e))
-        return {"emails": []}
+        error = str(e)
+        print("❌ Gmail Fetch Error:", error)
+        if "invalid_grant" in error:
+            return {
+                "success": False,
+                "error": "gmail_reconnect_required",
+                "message": "Gmail authorization expired. Please reconnect."
+            }
+
+    return {
+        "success": False,
+        "error": "gmail_error",
+        "message": error
+    }

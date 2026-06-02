@@ -96,6 +96,13 @@ syncBtn.addEventListener("click", async () => {
       credentials: "include"
     });
     const data = await res.json();
+    if (data.error === "gmail_reconnect_required") {
+      statusBox.innerHTML = `<span style="color:#ef4444;">
+      ⚠️ Gmail session expired. Please reconnect.</span`;
+      loginBtn.disabled = false;
+      loginBtn.innerText = "Reconnect Gmail";
+      return;
+    }
 
     if (!data.success) {
       statusBox.innerText = `⚠️ ${data.message}`;
