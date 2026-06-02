@@ -36,10 +36,12 @@ async function checkLoginStatus() {
       statusBox.innerText = "🟢 Gmail Connected";
       loginBtn.innerText  = "Connected";
       loginBtn.disabled   = true;
-    } else {
+      logoutBtn.style.display = "block";
+    }
+    else {
       statusBox.innerText = "🔴 Not Connected";
       loginBtn.disabled   = false;
-      logoutBtn.disabled = false;
+      logoutBtn.style.display = "none";
     }
   } catch {
     statusBox.innerText = "❌ Backend Offline";
