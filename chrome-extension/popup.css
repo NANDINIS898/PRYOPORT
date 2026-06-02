@@ -130,6 +130,14 @@ h1 {
   justify-content: space-between;
   gap: 8px;
 }
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#logout {
+  display: none;
+}
 
 .status-text {
   font-size: 12px;
