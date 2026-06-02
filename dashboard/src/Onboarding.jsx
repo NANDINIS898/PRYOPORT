@@ -147,7 +147,7 @@ export default function Onboarding({ auth }) {
       icon: "</>",
       title: "Install the Chrome Extension",
       desc: "Download the zip → chrome://extensions → Developer mode → Load unpacked → pick the unzipped folder.",
-      action: "https://github.com/NANDINIS898/pryoport/releases/latest/download/pryoport-extension.zip",
+      action: "https://github.com/NANDINIS898/pryoport/releases/latest/download/pryoport-extension-v1.0.0.zip",
       actionLabel: "Download Extension",
       color: "#38bdf8",
       bg: "rgba(56,189,248,0.08)",
