@@ -4,6 +4,7 @@ const DASHBOARD = "https://pryoport-frontend.vercel.app"; // ← your actual Ver
 // ── ELEMENTS ───────────────────────────────────────────
 const statusBox       = document.getElementById("status");
 const loginBtn        = document.getElementById("login");
+const logoutBtn        = document.getElementById("logout");
 const syncBtn         = document.getElementById("syncBtn");
 const syncLabel       = document.getElementById("syncLabel");
 const savePriorityBtn = document.getElementById("savePriority");
@@ -38,11 +39,13 @@ async function checkLoginStatus() {
     } else {
       statusBox.innerText = "🔴 Not Connected";
       loginBtn.disabled   = false;
+      logoutBtn.disabled = false;
     }
   } catch {
     statusBox.innerText = "❌ Backend Offline";
   }
 }
+
 
 // ── LOGIN — opens OAuth tab then polls until logged in ─
 loginBtn.addEventListener("click", () => {
@@ -182,6 +185,40 @@ async function loadNotifications() {
   }
 }
 
+// ── LOGOUT ─────────────────────────────────────────────
+logoutBtn.addEventListener("click", async () => {
+  try {
+    const res = await fetch(`${API}/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    statusBox.innerText = "🔴 Gmail Disconnected";
+
+    loginBtn.disabled = false;
+    loginBtn.innerText = "Login with Google";
+
+    urgentBadge.classList.add("hidden");
+
+    listHigh.innerHTML = "";
+    listMedium.innerHTML = "";
+
+    sectionHigh.classList.add("hidden");
+    sectionMedium.classList.add("hidden");
+
+    emptyState.classList.remove("hidden");
+
+    chrome.action.setBadgeText({
+      text: ""
+    });
+
+  } catch (err) {
+    console.error(err);
+    statusBox.innerText = "❌ Logout Failed";
+  }
+});
 // ── MAKE CARD ──────────────────────────────────────────
 function makeCard(item, priority) {
   const div = document.createElement("div");
