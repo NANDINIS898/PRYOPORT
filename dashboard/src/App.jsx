@@ -3,6 +3,7 @@ import { api } from "./api";
 import EmailCard from "./Emailcard";
 import RulesPanel from "./Rulespanel";
 import Onboarding from "./Onboarding";
+import { Link } from "react-router-dom";
 
 // ────────────────────────────────────────────────────────────────
 // Design tokens — keep colors centralized so the whole shell stays
@@ -580,7 +581,6 @@ export default function App() {
           </div>
         )}
       </main>
-
       {/* ════════════ STATUS BAR (footer) ════════════ */}
       <footer style={{
         position: "sticky", bottom: 0, zIndex: 50,
@@ -589,29 +589,74 @@ export default function App() {
         borderTop: `1px solid ${T.border}`,
         padding: "8px 28px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        fontFamily: T.mono, fontSize: 11, color: T.textFaint,
-        height: 32,
+        fontFamily: T.mono, fontSize: 11, color: T.textFaint,eight: 32,
       }}>
+        {/* LEFT SIDE */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
             <span style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: auth?.logged_in ? T.green : T.rose,
-              boxShadow: `0 0 6px ${auth?.logged_in ? T.green : T.rose}`,
-            }} />
-            {auth?.logged_in ? "connected" : "disconnected"}
-          </span>
-          <span style={{ opacity: 0.6 }}>·</span>
-          <span>{emails.length} emails cached</span>
-          <span style={{ opacity: 0.6 }}>·</span>
-          <span>{rules.length} rules</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span>last sync · {fmtRel(lastLoad)}</span>
-          <span style={{ opacity: 0.6 }}>·</span>
-          <span style={{ color: T.accent, fontWeight: 700 }}>PrYoPort v1.0</span>
-        </div>
-      </footer>
+        width: 6, height: 6, borderRadius: "50%",
+        background: auth?.logged_in ? T.green : T.rose,
+        boxShadow: `0 0 6px ${auth?.logged_in ? T.green : T.rose}`,
+      }} />
+      {auth?.logged_in ? "connected" : "disconnected"}
+    </span>
+
+    <span style={{ opacity: 0.6 }}>·</span>
+    <span>{emails.length} emails cached</span>
+    <span style={{ opacity: 0.6 }}>·</span>
+    <span>{rules.length} rules</span>
+
+    {/* 🔥 NAV LINKS ADDED HERE */}
+    <span style={{ opacity: 0.6 }}>·</span>
+
+    <Link
+      to="/"
+      style={{
+        color: T.textMute,
+        textDecoration: "none",
+        marginLeft: 4,
+      }}
+    >
+      Inbox
+    </Link>
+
+    <span style={{ opacity: 0.4 }}>·</span>
+
+    <Link
+      to="/onboarding"
+      style={{
+        color: T.textMute,
+        textDecoration: "none",
+      }}
+    >
+      Setup
+    </Link>
+
+    <span style={{ opacity: 0.4 }}>·</span>
+
+    <Link
+      to="/privacy"
+      style={{
+        color: T.textMute,
+        textDecoration: "none",
+      }}
+    >
+      Privacy
+    </Link>
+
+  </div>
+
+  {/* RIGHT SIDE */}
+  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+    <span>last sync · {fmtRel(lastLoad)}</span>
+    <span style={{ opacity: 0.6 }}>·</span>
+    <span style={{ color: T.accent, fontWeight: 700 }}>PrYoPort v1.0</span>
+  </div>
+
+</footer>
+
+      
 
       {/* ════════════ STYLES ════════════ */}
       <style>{`
