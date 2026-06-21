@@ -644,6 +644,15 @@ export default function App() {
     >
       Privacy
     </Link>
+    <Link
+      to="/terms"
+      style={{
+        color: T.textMute,
+        textDecoration: "none",
+      }}
+    >
+      Terms
+    </Link>
 
   </div>
 
